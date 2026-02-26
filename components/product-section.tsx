@@ -1,475 +1,484 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { CategoryFilter } from "./category-filter"
 import { ProductCard } from "./product-card"
+import { supabase, Product } from "@/lib/supabase"
 
-const products = [
-  // Lajas y Piedras
-  {
-    id: 1,
-    name: "Laja San Luis Natural",
-    price: 18500,
-    unit: "m2",
-    image: "/images/laja-natural.jpg",
-    category: "lajas-piedras",
-    categoryLabel: "Lajas y Piedras",
-  },
-  {
-    id: 2,
-    name: "Piedra Mar del Plata",
-    price: 22000,
-    unit: "m2",
-    image: "/images/piedra-natural.jpg",
-    category: "lajas-piedras",
-    categoryLabel: "Lajas y Piedras",
-  },
-  // Travertinos y Marmoles
-  {
-    id: 3,
-    name: "Travertino Turco a la Veta Taponado",
-    price: 85000,
-    unit: "m2",
-    image: "/images/travertino.jpg",
-    category: "travertinos-marmoles",
-    categoryLabel: "Travertinos y Marmoles",
-  },
-  {
-    id: 4,
-    name: "Travertino Turco al Agua Taponado",
-    price: 82000,
-    unit: "m2",
-    image: "/images/travertino.jpg",
-    category: "travertinos-marmoles",
-    categoryLabel: "Travertinos y Marmoles",
-  },
-  {
-    id: 5,
-    name: "Marmol Tundra Grey Interior",
-    price: 95000,
-    unit: "m2",
-    image: "/images/marmol.jpg",
-    category: "travertinos-marmoles",
-    categoryLabel: "Travertinos y Marmoles",
-  },
-  // Revestimientos Piscina
-  {
-    id: 6,
-    name: "Bali Stone Sukabumi",
-    price: 120000,
-    unit: "m2",
-    image: "/images/bali-stone.jpg",
-    category: "revestimientos-piscina",
-    categoryLabel: "Revestimientos Piscina",
-  },
-  {
-    id: 7,
-    name: "Black Lava",
-    price: 98000,
-    unit: "m2",
-    image: "/images/black-lava.jpg",
-    category: "revestimientos-piscina",
-    categoryLabel: "Revestimientos Piscina",
-  },
-  {
-    id: 8,
-    name: "Simil Bali Tasos",
-    price: 45000,
-    unit: "caja 1.80m2",
-    image: "/images/bali-stone.jpg",
-    category: "revestimientos-piscina",
-    categoryLabel: "Revestimientos Piscina",
-  },
-  {
-    id: 9,
-    name: "Simil Bali Santorini",
-    price: 45000,
-    unit: "caja 1.80m2",
-    image: "/images/bali-stone.jpg",
-    category: "revestimientos-piscina",
-    categoryLabel: "Revestimientos Piscina",
-  },
-  {
-    id: 10,
-    name: "Borde Piscina Travertino",
-    price: 35000,
-    unit: "ml",
-    image: "/images/borde-piscina.jpg",
-    category: "revestimientos-piscina",
-    categoryLabel: "Revestimientos Piscina",
-  },
-  // Pisos SPC
-  {
-    id: 11,
-    name: "Piso SPC Chalten",
-    price: 38000,
-    unit: "caja 2.69m2",
-    image: "/images/piso-spc.jpg",
-    category: "pisos-spc",
-    categoryLabel: "Pisos SPC",
-  },
-  {
-    id: 12,
-    name: "Piso SPC Lipan",
-    price: 42000,
-    unit: "caja 2.25m2",
-    image: "/images/piso-spc.jpg",
-    category: "pisos-spc",
-    categoryLabel: "Pisos SPC",
-  },
-  {
-    id: 13,
-    name: "Piso SPC Antofagasta",
-    price: 42000,
-    unit: "caja 2.25m2",
-    image: "/images/piso-spc.jpg",
-    category: "pisos-spc",
-    categoryLabel: "Pisos SPC",
-  },
-  {
-    id: 14,
-    name: "Piso SPC Andes",
-    price: 42000,
-    unit: "caja 2.25m2",
-    image: "/images/piso-spc.jpg",
-    category: "pisos-spc",
-    categoryLabel: "Pisos SPC",
-  },
-  {
-    id: 15,
-    name: "Zocalo PVC Chalten",
-    price: 5200,
-    unit: "unidad 2.40m",
-    image: "/images/zocalo-pvc.jpg",
-    category: "pisos-spc",
-    categoryLabel: "Pisos SPC",
-  },
-  {
-    id: 16,
-    name: "Zocalo PVC Lipan",
-    price: 5200,
-    unit: "unidad 2.40m",
-    image: "/images/zocalo-pvc.jpg",
-    category: "pisos-spc",
-    categoryLabel: "Pisos SPC",
-  },
-  {
-    id: 17,
-    name: "Zocalo PVC Antofagasta",
-    price: 5200,
-    unit: "unidad 2.40m",
-    image: "/images/zocalo-pvc.jpg",
-    category: "pisos-spc",
-    categoryLabel: "Pisos SPC",
-  },
-  {
-    id: 18,
-    name: "Zocalo PVC Blanco Polar",
-    price: 5800,
-    unit: "unidad 2.40m",
-    image: "/images/zocalo-pvc.jpg",
-    category: "pisos-spc",
-    categoryLabel: "Pisos SPC",
-  },
-  // Decks y Paneles WPC
-  {
-    id: 19,
-    name: "Deck WPC Exterior",
-    price: 55000,
-    unit: "m2",
-    image: "/images/deck-wpc.jpg",
-    category: "decks-wpc",
-    categoryLabel: "Decks y Paneles WPC",
-  },
-  {
-    id: 20,
-    name: "Wall Panel Exterior WPC",
-    price: 48000,
-    unit: "m2",
-    image: "/images/wall-panel.jpg",
-    category: "decks-wpc",
-    categoryLabel: "Decks y Paneles WPC",
-  },
-  {
-    id: 21,
-    name: "Wall Panel Interior EPS",
-    price: 32000,
-    unit: "m2",
-    image: "/images/wall-panel.jpg",
-    category: "decks-wpc",
-    categoryLabel: "Decks y Paneles WPC",
-  },
-  {
-    id: 22,
-    name: "Siding Co-Extruded WPC",
-    price: 52000,
-    unit: "m2",
-    image: "/images/siding-wpc.jpg",
-    category: "decks-wpc",
-    categoryLabel: "Decks y Paneles WPC",
-  },
-  // Porcelanatos
-  {
-    id: 23,
-    name: "Porcelanato Elizabeth 60x60",
-    price: 28000,
-    unit: "m2",
-    image: "/images/porcelanato.jpg",
-    category: "porcelanatos",
-    categoryLabel: "Porcelanatos",
-  },
-  // Bachas
-  {
-    id: 24,
-    name: "Bacha Rio Simple BRS298",
-    price: 185000,
-    unit: "unidad",
-    image: "/images/bacha-piedra.jpg",
-    category: "bachas",
-    categoryLabel: "Bachas de Piedra",
-  },
-  {
-    id: 25,
-    name: "Bacha Rio Doble",
-    price: 320000,
-    unit: "unidad",
-    image: "/images/bacha-piedra.jpg",
-    category: "bachas",
-    categoryLabel: "Bachas de Piedra",
-  },
-  {
-    id: 26,
-    name: "Bacha Isla Onix",
-    price: 245000,
-    unit: "unidad",
-    image: "/images/bacha-piedra.jpg",
-    category: "bachas",
-    categoryLabel: "Bachas de Piedra",
-  },
-  {
-    id: 27,
-    name: "Bacha Volcan",
-    price: 210000,
-    unit: "unidad",
-    image: "/images/bacha-piedra.jpg",
-    category: "bachas",
-    categoryLabel: "Bachas de Piedra",
-  },
-  {
-    id: 28,
-    name: "Bacha Arena",
-    price: 195000,
-    unit: "unidad",
-    image: "/images/bacha-piedra.jpg",
-    category: "bachas",
-    categoryLabel: "Bachas de Piedra",
-  },
-  {
-    id: 29,
-    name: "Bacha Rocosa",
-    price: 230000,
-    unit: "unidad",
-    image: "/images/bacha-piedra.jpg",
-    category: "bachas",
-    categoryLabel: "Bachas de Piedra",
-  },
-  // Premoldeados
-  {
-    id: 30,
-    name: "Premoldeado de Hormigon",
-    price: 15000,
-    unit: "unidad",
-    image: "/images/premoldeado.jpg",
-    category: "premoldeados",
-    categoryLabel: "Premoldeados",
-  },
-  {
-    id: 31,
-    name: "Murete Premoldeado",
-    price: 22000,
-    unit: "unidad",
-    image: "/images/premoldeado.jpg",
-    category: "premoldeados",
-    categoryLabel: "Premoldeados",
-  },
-  // Adoquines y Veredas
-  {
-    id: 32,
-    name: "Adoquin de Hormigon",
-    price: 18000,
-    unit: "m2",
-    image: "/images/adoquines.jpg",
-    category: "adoquines-veredas",
-    categoryLabel: "Adoquines y Veredas",
-  },
-  {
-    id: 33,
-    name: "Vereda Rustica",
-    price: 14000,
-    unit: "m2",
-    image: "/images/baldosa-vereda.jpg",
-    category: "adoquines-veredas",
-    categoryLabel: "Adoquines y Veredas",
-  },
-  {
-    id: 34,
-    name: "Mosaico de Granito para Vereda",
-    price: 16500,
-    unit: "m2",
-    image: "/images/baldosa-vereda.jpg",
-    category: "adoquines-veredas",
-    categoryLabel: "Adoquines y Veredas",
-  },
-  // Ladrillos Refractarios
-  {
-    id: 35,
-    name: "Ladrillo Refractario Comun",
-    price: 2800,
-    unit: "unidad",
-    image: "/images/ladrillo-refractario.jpg",
-    category: "ladrillos-refractarios",
-    categoryLabel: "Ladrillos Refractarios",
-  },
-  // Madera
-  {
-    id: 36,
-    name: "Poste de Madera Quebracho",
-    price: 45000,
-    unit: "unidad",
-    image: "/images/postes-madera.jpg",
-    category: "madera",
-    categoryLabel: "Madera y Postes",
-  },
-  {
-    id: 37,
-    name: "Varilla de Madera",
-    price: 12000,
-    unit: "unidad",
-    image: "/images/postes-madera.jpg",
-    category: "madera",
-    categoryLabel: "Madera y Postes",
-  },
-  {
-    id: 38,
-    name: "Tablon Carpinteria Rural",
-    price: 35000,
-    unit: "unidad",
-    image: "/images/postes-madera.jpg",
-    category: "madera",
-    categoryLabel: "Madera y Postes",
-  },
-  {
-    id: 39,
-    name: "Tranquera de Madera",
-    price: 180000,
-    unit: "unidad",
-    image: "/images/tranquera.jpg",
-    category: "madera",
-    categoryLabel: "Madera y Postes",
-  },
-  // Cercos y Tejidos
-  {
-    id: 40,
-    name: "Tejido Romboidal 150cm",
-    price: 28000,
-    unit: "rollo 10m",
-    image: "/images/tejido-cerco.jpg",
-    category: "cercos-tejidos",
-    categoryLabel: "Cercos y Tejidos",
-  },
-  {
-    id: 41,
-    name: "Aislador para Cerco Electrico",
-    price: 850,
-    unit: "unidad",
-    image: "/images/tejido-cerco.jpg",
-    category: "cercos-tejidos",
-    categoryLabel: "Cercos y Tejidos",
-  },
-  // Mecano Ganadero
-  {
-    id: 42,
-    name: "Panel Mecano Ganadero 3m",
-    price: 125000,
-    unit: "unidad",
-    image: "/images/mecano-ganadero.jpg",
-    category: "mecano-ganadero",
-    categoryLabel: "Mecano Ganadero",
-  },
-  // Luminarias
-  {
-    id: 43,
-    name: "Totem Luminico Indonesia",
-    price: 350000,
-    unit: "unidad",
-    image: "/images/totem-luz.jpg",
-    category: "luminarias",
-    categoryLabel: "Totems Luminicos",
-  },
-  // Mesas y Asadores
-  {
-    id: 44,
-    name: "Asador de Camping Grande",
-    price: 85000,
-    unit: "unidad",
-    image: "/images/asador.jpg",
-    category: "asadores",
-    categoryLabel: "Mesas y Asadores",
-  },
-  {
-    id: 45,
-    name: "Pileta Comedero-Bebedero Rectangular",
-    price: 65000,
-    unit: "unidad",
-    image: "/images/premoldeado.jpg",
-    category: "asadores",
-    categoryLabel: "Mesas y Asadores",
-  },
-]
+type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'
 
 export function ProductSection() {
   const [selectedCategory, setSelectedCategory] = useState("todos")
+  const [sortBy, setSortBy] = useState<SortOption>('name-asc')
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const filtered =
-    selectedCategory === "todos"
-      ? products
-      : products.filter((p) => p.category === selectedCategory)
+  const fetchCategories = async () => {
+    try {
+      console.log('Fetching categories...')
+      const response = await fetch('/api/admin/categories')
+      console.log('Categories response status:', response.status)
+      
+      if (!response.ok) {
+        console.error('Categories API error:', response.status)
+        // Extraer categorías de los productos como fallback
+        const uniqueCategories = [...new Set(products.map(p => p.category))].map(cat => {
+          const product = products.find(p => p.category === cat)
+          return {
+            name: cat,
+            label: product?.category_label || cat
+          }
+        })
+        
+        console.log('Fallback categories from products:', uniqueCategories)
+        setCategories(uniqueCategories)
+        return
+      }
+      
+      const data = await response.json()
+      console.log('Categories data:', data)
+      
+      if (data.categories && data.categories.length > 0) {
+        console.log('Setting categories from API:', data.categories.length)
+        setCategories(data.categories)
+      } else {
+        console.log('No categories from API, checking products for unique categories...')
+        
+        // Extraer categorías únicas de los productos
+        const uniqueCategories = [...new Set(products.map(p => p.category))].map(cat => {
+          const product = products.find(p => p.category === cat)
+          return {
+            name: cat,
+            label: product?.category_label || cat
+          }
+        })
+        
+        console.log('Categories from products:', uniqueCategories)
+        setCategories(uniqueCategories)
+      }
+      
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+      
+      // Extraer categorías de los productos como fallback
+      const uniqueCategories = [...new Set(products.map(p => p.category))].map(cat => {
+        const filtered = products.filter(product => {
+          if (selectedCategory === "todos" || selectedCategory === "all-products") {
+            return true // Show all products
+          }
+          return product.category === selectedCategory
+        })
+        const product = filtered.find(p => p.category === cat)
+        return {
+          name: cat,
+          label: product?.category_label || cat
+        }
+      })
+      
+      console.log('Fallback categories from products:', uniqueCategories)
+      setCategories(uniqueCategories)
+    }
+  }
+
+  const fetchProducts = async () => {
+    console.log('=== FETCH PRODUCTS INICIADO ===')
+    
+    try {
+      // Intentar cargar productos reales primero
+      const response = await fetch('/api/products', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      })
+      
+      console.log('Products response status:', response.status)
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Products data received:', data)
+        
+        if (data.products && data.products.length > 0) {
+          console.log('Setting productos reales:', data.products.length)
+          setProducts(data.products)
+          setLoading(false)
+          return
+        }
+      }
+      
+      console.log('No se encontraron productos reales, usando fallback...')
+    } catch (error) {
+      console.error('Error en fetch de productos reales:', error)
+      console.log('Usando fallback debido a error...')
+    }
+    
+    // Fallback solo si no hay productos reales
+    console.log('Mostrando productos de ejemplo...')
+    setProducts([
+      {
+        id: '1',
+        name: 'Producto de ejemplo 1',
+        price: 1000,
+        unit: 'unidad',
+        images: ['/images/logo.jpg'],
+        category: 'ejemplo',
+        category_label: 'Ejemplo',
+        stock: 10,
+        description: 'Producto de ejemplo para testing'
+      },
+      {
+        id: '2',
+        name: 'Producto de ejemplo 2',
+        price: 2000,
+        unit: 'caja',
+        images: ['/images/logo.jpg'],
+        category: 'ejemplo-2',
+        category_label: 'Ejemplo 2',
+        stock: 5,
+        description: 'Otro producto de ejemplo'
+      }
+    ])
+    
+    setLoading(false)
+    console.log('=== FETCH PRODUCTS COMPLETADO ===')
+  }
+
+  // Llamar a fetchProducts cuando el componente se monta
+  useEffect(() => {
+    console.log('=== COMPONENTE MONTADO - LLAMANDO FETCH PRODUCTS ===')
+    fetchProducts()
+  }, [])
+
+  // Detectar categoría del URL solo al montar el componente
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.hash.split('?')[1])
+      const categoryFromUrl = urlParams.get('category')
+      
+      if (categoryFromUrl) {
+        console.log('Categoría inicial desde URL:', categoryFromUrl)
+        setSelectedCategory(categoryFromUrl)
+        
+        // Scroll a productos después de un breve retraso
+        setTimeout(() => {
+          const element = document.getElementById('productos')
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' })
+          }
+        }, 300)
+      }
+    }
+  }, []) // Solo se ejecuta al montar
+
+  // Actualizar el hash cuando cambia la categoría seleccionada
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      let hash
+      
+      if (selectedCategory === "todos" || selectedCategory === "all-products") {
+        hash = '#productos'
+      } else {
+        hash = `#productos?category=${selectedCategory}`
+      }
+      
+      // Actualizar URL sin recargar página
+      if (window.location.hash !== hash) {
+        console.log('Actualizando URL a:', hash, 'desde categoría:', selectedCategory)
+        window.history.replaceState(null, '', hash)
+      }
+    }
+  }, [selectedCategory])
+
+  const filtered = products
+    .map(product => ({
+      ...product,
+      images: product.images?.filter(img => 
+        img && 
+        img.trim() !== '' && 
+        !img.startsWith('blob:') &&
+        img !== '/images/placeholder-product.jpg'
+      ) || []
+    }))
+    .filter((p) => (selectedCategory === "todos" || selectedCategory === "all-products") || p.category === selectedCategory)
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name)
+        case 'name-desc':
+          return b.name.localeCompare(a.name)
+        case 'price-asc':
+          return a.price - b.price
+        case 'price-desc':
+          return b.price - a.price
+        default:
+          return 0
+      }
+    })
+
+  const getSortIcon = (option: SortOption) => {
+    switch (option) {
+      case 'name-asc':
+        return <ArrowUp className="h-4 w-4" />
+      case 'name-desc':
+        return <ArrowDown className="h-4 w-4" />
+      case 'price-asc':
+        return <ArrowUp className="h-4 w-4" />
+      case 'price-desc':
+        return <ArrowDown className="h-4 w-4" />
+      default:
+        return <ArrowUpDown className="h-4 w-4" />
+    }
+  }
+
+  const getSortLabel = (option: SortOption) => {
+    switch (option) {
+      case 'name-asc':
+        return 'Nombre (A-Z)'
+      case 'name-desc':
+        return 'Nombre (Z-A)'
+      case 'price-asc':
+        return 'Precio (menor a mayor)'
+      case 'price-desc':
+        return 'Precio (mayor a menor)'
+      default:
+        return 'Ordenar'
+    }
+  }
+
+  if (loading) {
+    console.log('=== AUN EN LOADING ===')
+    console.log('Loading state:', loading)
+    console.log('Products length:', products.length)
+    return (
+      <section id="productos" className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Cargando productos...</p>
+            <p className="text-xs text-muted-foreground mt-2">Debug: loading={loading.toString()}, products={products.length}</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  console.log('ProductSection render:', { 
+    selectedCategory, 
+    categoriesLength: categories.length, 
+    productsLength: products.length,
+    isMobile: typeof window !== 'undefined' ? window.innerWidth < 1024 : 'unknown'
+  })
 
   return (
     <section id="productos" className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-      <div className="mb-10">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          Nuestros Productos
-        </h2>
-        <p className="mt-2 text-muted-foreground">
-          Explora nuestro catalogo completo de materiales para tu obra.
-        </p>
-      </div>
-
       <div className="flex flex-col gap-8 lg:flex-row">
-        <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
+        {/* Desktop Category Filter */}
+        <div className="hidden lg:block">
+          <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
+        </div>
 
         <div className="flex-1">
-          {filtered.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  name={product.name}
-                  price={product.price}
-                  unit={product.unit}
-                  image={product.image}
-                  category={product.categoryLabel}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
+          {/* Sort Controls - Mostrar siempre que haya productos */}
+          {(selectedCategory !== "todos" || filtered.length > 0) && (
+            <div className="mb-6 flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                No se encontraron productos en esta categoria.
+                {filtered.length} producto{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
               </p>
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortOption)}
+                  className="appearance-none bg-background border border-border rounded-md px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                >
+                  <option value="name-asc">Nombre (A-Z)</option>
+                  <option value="name-desc">Nombre (Z-A)</option>
+                  <option value="price-asc">Precio (menor a mayor)</option>
+                  <option value="price-desc">Precio (mayor a menor)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  {getSortIcon(sortBy)}
+                </div>
+              </div>
             </div>
           )}
+
+          {/* Mobile: Show categories list, Desktop: Show products */}
+          <div className="lg:hidden">
+            {selectedCategory === "todos" ? (
+              <div className="space-y-4">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-foreground mb-3">
+                    Explora nuestras categorías
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Descubre la variedad de materiales para tu proyecto
+                  </p>
+                </div>
+                
+                {/* Categories Grid */}
+                <div className="grid grid-cols-1 gap-4">
+                  <button
+                    onClick={() => {
+                      setSelectedCategory("all-products")
+                      // Update URL to show "todos" state
+                      if (typeof window !== 'undefined') {
+                        window.history.replaceState(null, '', '#productos')
+                      }
+                    }}
+                    className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 ${
+                      selectedCategory === "all-products"
+                        ? "border-primary bg-primary/10 shadow-lg scale-105"
+                        : "border-border bg-card hover:border-primary/50 hover:shadow-md hover:scale-102"
+                    }`}
+                  >
+                    <div className="relative h-32 bg-cover bg-center" 
+                         style={{ backgroundImage: 'url(/images/laja-natural.jpg)' }}>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+                      <div className="absolute inset-0 flex items-end p-4">
+                        <div className="text-left">
+                          <h4 className="text-lg font-semibold text-white">
+                            Todos los productos
+                          </h4>
+                          <p className="text-sm text-white/90">
+                            Explora nuestro catálogo completo
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                  
+                  {categories.map((category) => {
+                    const count = products.filter(p => p.category === category.name).length
+                    const sampleProduct = products.find(p => p.category === category.name)
+                    const backgroundImage = sampleProduct?.images?.[0] || '/images/laja-natural.jpg'
+                    
+                    return (
+                      <button
+                        key={category.name}
+                        onClick={() => setSelectedCategory(category.name)}
+                        className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 ${
+                          selectedCategory === category.name
+                            ? "border-primary bg-primary/10 shadow-lg scale-105"
+                            : "border-border bg-card hover:border-primary/50 hover:shadow-md hover:scale-102"
+                        }`}
+                      >
+                        <div className="relative h-32 bg-cover bg-center" 
+                             style={{ backgroundImage: `url(${backgroundImage})` }}>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+                          <div className="absolute inset-0 flex items-end p-4">
+                            <div className="text-left">
+                              <h4 className="text-lg font-semibold text-white">
+                                {category.label}
+                              </h4>
+                              <p className="text-sm text-white/90">
+                                {count} productos disponibles
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : filtered.length > 0 ? (
+              <div>
+                {/* Back button */}
+                <button
+                  onClick={() => setSelectedCategory("todos")}
+                  className="mb-6 flex items-center gap-2 text-primary hover:underline font-medium"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Volver a categorías
+                </button>
+
+                {/* Mobile Sort Controls */}
+                <div className="mb-6 flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    {filtered.length} producto{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
+                  </p>
+                  <div className="relative">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as SortOption)}
+                      className="appearance-none bg-background border border-border rounded-md px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                      <option value="name-asc">Nombre (A-Z)</option>
+                      <option value="name-desc">Nombre (Z-A)</option>
+                      <option value="price-asc">Precio (menor a mayor)</option>
+                      <option value="price-desc">Precio (mayor a menor)</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                      <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {filtered.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      id={product.id}
+                      name={product.name}
+                      price={product.price}
+                      unit={product.unit}
+                      images={product.images}
+                      category={product.category_label}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
+                <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  No se encontraron productos en esta categoría.
+                </p>
+                <button
+                  onClick={() => setSelectedCategory("todos")}
+                  className="text-primary hover:underline text-sm font-medium"
+                >
+                  Ver todas las categorías
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop: Always show products */}
+          <div className="hidden lg:block">
+            {filtered.length > 0 ? (
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                {filtered.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    id={product.id}
+                    name={product.name}
+                    price={product.price}
+                    unit={product.unit}
+                    images={product.images}
+                    category={product.category_label}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No se encontraron productos en esta categoria.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </section>
