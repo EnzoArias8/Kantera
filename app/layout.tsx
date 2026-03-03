@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ProductModalProvider } from '@/components/product-modal-provider'
 import { StockModalProvider } from '@/components/stock-modal-provider'
+import ChatWidget from '@/components/chat-widget'
 
 const _inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -32,6 +33,7 @@ export default function RootLayout({
         {children}
         <ProductModalProvider />
         <StockModalProvider />
+        <ChatWidget />
       </body>
     </html>
   )

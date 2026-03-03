@@ -101,12 +101,16 @@ export function ProductSection() {
         const data = await response.json()
         console.log('Products data received:', data)
         
-        if (data.products && data.products.length > 0) {
+        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
           console.log('Setting productos reales:', data.products.length)
           setProducts(data.products)
           setLoading(false)
           return
+        } else {
+          console.log('API returned products but array is empty or invalid:', data.products)
         }
+      } else {
+        console.log('API response not ok:', response.status)
       }
       
       console.log('No se encontraron productos reales, usando fallback...')
