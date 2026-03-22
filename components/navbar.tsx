@@ -161,9 +161,37 @@ export function Navbar() {
               placeholder="Buscar productos..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
+              onFocus={() => setShowSearchResults(searchResults.length > 0)}
               suppressHydrationWarning={true}
               className="w-full rounded-lg border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
+            
+            {/* Mobile Search Results Dropdown */}
+            {showSearchResults && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
+                {searchResults.map((product: any) => (
+                  <Link
+                    key={product.id}
+                    href={`/product/${product.id}`}
+                    onClick={() => {
+                      handleProductClick(product)
+                      setMobileOpen(false)
+                    }}
+                    className="block p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-sm text-gray-900">{product.name}</p>
+                        <p className="text-xs text-gray-500">${product.price.toLocaleString()} / {product.unit}</p>
+                      </div>
+                      <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+                        {product.category_label}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
           <div className="mt-3 flex flex-col gap-1">
             {navLinks.map((link) => (

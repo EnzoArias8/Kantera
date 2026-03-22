@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ProductModalProvider } from '@/components/product-modal-provider'
 import { StockModalProvider } from '@/components/stock-modal-provider'
-import ChatWidget from '@/components/chat-widget'
+import ChatWrapper from './chat-wrapper'
 
 const _inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -29,11 +29,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="font-sans antialiased">
+      <body className={`${_inter.variable} font-sans antialiased`}>
         {children}
         <ProductModalProvider />
         <StockModalProvider />
-        <ChatWidget />
+        <ChatWrapper />
       </body>
     </html>
   )

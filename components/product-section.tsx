@@ -1,10 +1,84 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
-import { CategoryFilter } from "./category-filter"
+import { ArrowUpDown, ArrowUp, ArrowDown, Grid3X3, Layers, Mountain, Droplets, TreePine, Fence, Hammer, Lamp, Bath, Flame, LayoutGrid, PanelTop, Footprints, Wind } from "lucide-react"
+import CategoryFilter from "./category-filter"
 import { ProductCard } from "./product-card"
-import { supabase, Product } from "@/lib/supabase"
+import { supabase, Product, Category } from "@/lib/supabase"
+
+// Mapeo de imágenes para categorías
+const getImageForCategory = (categoryId: string): string => {
+  const imageMap: { [key: string]: string } = {
+    'lajas-piedras': '/images/laja-natural.jpg',
+    'travertinos-marmoles': '/images/travertino.jpg',
+    'revestimientos-piscina': '/images/borde-piscina.jpg',
+    'pisos-spc': '/images/piso-spc.jpg',
+    'decks-wpc': '/images/deck-wpc.jpg',
+    'porcelanatos': '/images/porcelanato.jpg',
+    'bachas': '/images/bacha-piedra.jpg',
+    'premoldeados': '/images/premoldeado.jpg',
+    'adoquines-veredas': '/images/adoquines.jpg',
+    'ladrillos-refractarios': '/images/ladrillo-refractario.jpg',
+    'madera': '/images/postes-madera.jpg',
+    'cercos-tejidos': '/images/tejido-cerco.jpg',
+    'mecano-ganadero': '/images/mecano-ganadero.jpg',
+    'luminarias': '/images/totem-luz.jpg',
+    'asadores': '/images/asador.jpg',
+  }
+  
+  return imageMap[categoryId] || '/images/laja-natural.jpg'
+}
+
+// Mapeo de iconos para categorías
+const getIconForCategory = (categoryName: string) => {
+  const iconMap: { [key: string]: React.ComponentType<any> } = {
+    'Lajas': Layers,
+    'Piedras': Mountain,
+    'Travertinos': Mountain,
+    'Marmoles': Mountain,
+    'Revestimientos': Droplets,
+    'Piscina': Droplets,
+    'Pisos': LayoutGrid,
+    'SPC': LayoutGrid,
+    'Decks': PanelTop,
+    'Paneles': PanelTop,
+    'WPC': PanelTop,
+    'Porcelanatos': Footprints,
+    'Bachas': Bath,
+    'Premoldeados': Layers,
+    'Adoquines': LayoutGrid,
+    'Veredas': LayoutGrid,
+    'Ladrillos': Flame,
+    'Refractarios': Flame,
+    'Madera': TreePine,
+    'Postes': TreePine,
+    'Cercos': Fence,
+    'Tejidos': Fence,
+    'Mecano': Hammer,
+    'Ganadero': Hammer,
+    'Luminarias': Lamp,
+    'Totems': Lamp,
+    'Luminicos': Lamp,
+    'Mesas': Flame,
+    'Asadores': Flame,
+    'Ventiladores': Wind,
+  }
+  
+  // Buscar coincidencia exacta primero
+  if (iconMap[categoryName]) {
+    return iconMap[categoryName]
+  }
+  
+  // Si no encuentra, buscar por palabras clave
+  const keywords = Object.keys(iconMap)
+  for (const keyword of keywords) {
+    if (categoryName.toLowerCase().includes(keyword.toLowerCase())) {
+      return iconMap[keyword]
+    }
+  }
+  
+  return Grid3X3 // Icono por defecto
+}
 
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'
 
@@ -12,75 +86,78 @@ export function ProductSection() {
   const [selectedCategory, setSelectedCategory] = useState("todos")
   const [sortBy, setSortBy] = useState<SortOption>('name-asc')
   const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<any[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchCategories = async () => {
-    try {
-      console.log('Fetching categories...')
-      const response = await fetch('/api/admin/categories')
-      console.log('Categories response status:', response.status)
+  // Cargar categorías desde Supabase
+  useEffect(() => {
+    const fetchCategories = async () => {
+      // Categorías de fallback para consistencia con productos existentes
+      const fallbackCategories = [
+        { id: "lajas-piedras", name: "Lajas y Piedras", icon: Layers },
+        { id: "travertinos-marmoles", name: "Travertinos y Marmoles", icon: Mountain },
+        { id: "revestimientos-piscina", name: "Revestimientos Piscina", icon: Droplets },
+        { id: "pisos-spc", name: "Pisos SPC", icon: LayoutGrid },
+        { id: "decks-wpc", name: "Decks y Paneles WPC", icon: PanelTop },
+        { id: "porcelanatos", name: "Porcelanatos", icon: Footprints },
+        { id: "bachas", name: "Bachas de Piedra", icon: Bath },
+        { id: "premoldeados", name: "Premoldeados", icon: Layers },
+        { id: "adoquines-veredas", name: "Adoquines y Veredas", icon: LayoutGrid },
+        { id: "ladrillos-refractarios", name: "Ladrillos Refractarios", icon: Flame },
+        { id: "madera", name: "Madera y Postes", icon: TreePine },
+        { id: "cercos-tejidos", name: "Cercos y Tejidos", icon: Fence },
+        { id: "mecano-ganadero", name: "Mecano Ganadero", icon: Hammer },
+        { id: "luminarias", name: "Totems Luminicos", icon: Lamp },
+        { id: "asadores", name: "Mesas y Asadores", icon: Flame },
+      ]
       
-      if (!response.ok) {
-        console.error('Categories API error:', response.status)
-        // Extraer categorías de los productos como fallback
-        const uniqueCategories = [...new Set(products.map(p => p.category))].map(cat => {
-          const product = products.find(p => p.category === cat)
-          return {
-            name: cat,
-            label: product?.category_label || cat
-          }
-        })
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .order('name')
         
-        console.log('Fallback categories from products:', uniqueCategories)
-        setCategories(uniqueCategories)
-        return
-      }
-      
-      const data = await response.json()
-      console.log('Categories data:', data)
-      
-      if (data.categories && data.categories.length > 0) {
-        console.log('Setting categories from API:', data.categories.length)
-        setCategories(data.categories)
-      } else {
-        console.log('No categories from API, checking products for unique categories...')
-        
-        // Extraer categorías únicas de los productos
-        const uniqueCategories = [...new Set(products.map(p => p.category))].map(cat => {
-          const product = products.find(p => p.category === cat)
-          return {
-            name: cat,
-            label: product?.category_label || cat
-          }
-        })
-        
-        console.log('Categories from products:', uniqueCategories)
-        setCategories(uniqueCategories)
-      }
-      
-    } catch (error) {
-      console.error('Error fetching categories:', error)
-      
-      // Extraer categorías de los productos como fallback
-      const uniqueCategories = [...new Set(products.map(p => p.category))].map(cat => {
-        const filtered = products.filter(product => {
-          if (selectedCategory === "todos" || selectedCategory === "all-products") {
-            return true // Show all products
-          }
-          return product.category === selectedCategory
-        })
-        const product = filtered.find(p => p.category === cat)
-        return {
-          name: cat,
-          label: product?.category_label || cat
+        if (error) {
+          console.error('Error fetching categories:', error)
+          console.log('Usando fallback categories')
+          setCategories(fallbackCategories)
+        } else if (data && data.length > 0) {
+          console.log('Categorías desde Supabase:', data)
+          
+          // Mapear categorías de Supabase con iconos automáticos
+          const mappedCategories = data.map((category: any) => {
+            console.log('Procesando categoría:', category)
+            
+            // Formatear el nombre: convertir guiones a espacios y capitalizar
+            const formattedName = (category.name || 'Sin nombre')
+              .split('-')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+              .join(' y ')
+            
+            console.log('Nombre formateado:', formattedName)
+            
+            return {
+              id: category.id,
+              name: formattedName,
+              icon: getIconForCategory(formattedName)
+            }
+          })
+          
+          // Usar solo categorías de Supabase (sin fallback para evitar duplicados)
+          console.log('Categorías desde Supabase (solo dinámicas):', mappedCategories)
+          setCategories(mappedCategories)
+        } else {
+          console.log('No hay categorías en Supabase, usando fallback')
+          setCategories(fallbackCategories)
         }
-      })
-      
-      console.log('Fallback categories from products:', uniqueCategories)
-      setCategories(uniqueCategories)
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+        setCategories(fallbackCategories)
+      }
     }
-  }
+
+    fetchCategories()
+  }, [])
 
   const fetchProducts = async () => {
     console.log('=== FETCH PRODUCTS INICIADO ===')
@@ -177,6 +254,42 @@ export function ProductSection() {
     }
   }, []) // Solo se ejecuta al montar
 
+  // Manejar la selección de categoría con scroll a sección productos
+  const handleCategorySelect = (categoryId: string) => {
+    setSelectedCategory(categoryId)
+    
+    // Hacer scroll a la sección de productos con retraso para móvil
+    if (typeof window !== 'undefined') {
+      // Pequeño retraso para asegurar que el DOM se actualice
+      setTimeout(() => {
+        // Scroll suave a la sección #productos
+        const productosElement = document.getElementById('productos')
+        if (productosElement) {
+          console.log('Haciendo scroll a productos element')
+          productosElement.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest'
+          })
+        } else {
+          // Fallback: scroll al principio de la página
+          console.log('Fallback: scroll al principio de página')
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          })
+        }
+      }, 100) // 100ms de retraso
+      
+      // Actualizar URL
+      if (categoryId === "todos" || categoryId === "all-products") {
+        window.history.replaceState(null, '', '#productos')
+      } else {
+        window.history.replaceState(null, '', `#productos-${categoryId}`)
+      }
+    }
+  }
+
   // Actualizar el hash cuando cambia la categoría seleccionada
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -206,7 +319,45 @@ export function ProductSection() {
         img !== '/images/placeholder-product.jpg'
       ) || []
     }))
-    .filter((p) => (selectedCategory === "todos" || selectedCategory === "all-products") || p.category === selectedCategory)
+    .filter((p) => {
+      // Si es "todos" o "all-products", mostrar todos
+      if (selectedCategory === "todos" || selectedCategory === "all-products") {
+        return true
+      }
+      
+      // Debug: mostrar qué está pasando
+      console.log('Filtrando producto:', p.name, 'categoría:', p.category, 'seleccionada:', selectedCategory)
+      
+      // Crear mapeo dinámico de nombres de categorías a IDs
+      const categoryNameToId: { [key: string]: string } = {}
+      
+      // Construir mapeo dinámico desde las categorías cargadas
+      categories.forEach(category => {
+        // Convertir nombre formateado a formato original (ej: "Lajas y Piedras" → "lajas-piedras")
+        const originalName = category.name.toLowerCase().replace(/ y /g, '-')
+        
+        // Mapear tanto el nombre formateado como el original
+        categoryNameToId[originalName] = category.id
+        categoryNameToId[category.name] = category.id
+        
+        // También mapear variantes parciales
+        const nameParts = category.name.toLowerCase().split(' y ')
+        nameParts.forEach(part => {
+          categoryNameToId[part] = category.id
+        })
+      })
+      
+      console.log('Mapeo dinámico construido:', categoryNameToId)
+      
+      // Obtener el ID de la categoría seleccionada
+      const expectedCategoryId = categoryNameToId[p.category as keyof typeof categoryNameToId]
+      
+      console.log('ID esperado para categoría:', p.category, '→', expectedCategoryId)
+      console.log('Comparando:', expectedCategoryId, '===', selectedCategory, '=', expectedCategoryId === selectedCategory)
+      
+      // Filtrar por ID de categoría
+      return expectedCategoryId === selectedCategory
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case 'name-asc':
@@ -285,30 +436,6 @@ export function ProductSection() {
         </div>
 
         <div className="flex-1">
-          {/* Sort Controls - Mostrar siempre que haya productos */}
-          {(selectedCategory !== "todos" || filtered.length > 0) && (
-            <div className="mb-6 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                {filtered.length} producto{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
-              </p>
-              <div className="relative">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="appearance-none bg-background border border-border rounded-md px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                >
-                  <option value="name-asc">Nombre (A-Z)</option>
-                  <option value="name-desc">Nombre (Z-A)</option>
-                  <option value="price-asc">Precio (menor a mayor)</option>
-                  <option value="price-desc">Precio (mayor a menor)</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                  {getSortIcon(sortBy)}
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Mobile: Show categories list, Desktop: Show products */}
           <div className="lg:hidden">
             {selectedCategory === "todos" ? (
@@ -326,11 +453,7 @@ export function ProductSection() {
                 <div className="grid grid-cols-1 gap-4">
                   <button
                     onClick={() => {
-                      setSelectedCategory("all-products")
-                      // Update URL to show "todos" state
-                      if (typeof window !== 'undefined') {
-                        window.history.replaceState(null, '', '#productos')
-                      }
+                      handleCategorySelect("all-products")
                     }}
                     className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 ${
                       selectedCategory === "all-products"
@@ -355,16 +478,60 @@ export function ProductSection() {
                   </button>
                   
                   {categories.map((category) => {
-                    const count = products.filter(p => p.category === category.name).length
-                    const sampleProduct = products.find(p => p.category === category.name)
-                    const backgroundImage = sampleProduct?.images?.[0] || '/images/laja-natural.jpg'
+                    // Crear el mismo mapeo dinámico que se usa para filtrar
+                    const categoryNameToId: { [key: string]: string } = {}
+                    
+                    // Construir mapeo dinámico desde las categorías cargadas
+                    categories.forEach(cat => {
+                      // Convertir nombre formateado a formato original (ej: "Lajas y Piedras" → "lajas-piedras")
+                      const originalName = cat.name.toLowerCase().replace(/ y /g, '-')
+                      
+                      // Mapear tanto el nombre formateado como el original
+                      categoryNameToId[originalName] = cat.id
+                      categoryNameToId[cat.name] = cat.id
+                      
+                      // También mapear variantes parciales
+                      const nameParts = cat.name.toLowerCase().split(' y ')
+                      nameParts.forEach(part => {
+                        categoryNameToId[part] = cat.id
+                      })
+                    })
+                    
+                    // Contar productos usando el mapeo dinámico
+                    const count = products.filter(p => {
+                      const expectedCategoryId = categoryNameToId[p.category as keyof typeof categoryNameToId]
+                      return expectedCategoryId === category.id
+                    }).length
+                    
+                    // Obtener imagen del primer producto de la categoría, o imagen específica si no hay productos
+                    const categoryProducts = products.filter(p => {
+                      const expectedCategoryId = categoryNameToId[p.category as keyof typeof categoryNameToId]
+                      return expectedCategoryId === category.id
+                    })
+                    
+                    // Usar imagen del primer producto si existe, sino imagen de categoría específica
+                    let backgroundImage = getImageForCategory(
+                      Object.keys(categoryNameToId).find(key => categoryNameToId[key as keyof typeof categoryNameToId] === category.id) || 
+                      category.name.toLowerCase().replace(/ y /g, '-')
+                    )
+                    
+                    // Si hay productos en esta categoría, usar la imagen del primer producto
+                    if (categoryProducts.length > 0) {
+                      const firstProduct = categoryProducts[0]
+                      if (firstProduct.images && firstProduct.images.length > 0) {
+                        backgroundImage = firstProduct.images[0]
+                        console.log('Usando imagen del primer producto para', category.name, ':', backgroundImage)
+                      }
+                    }
+                    
+                    console.log('Contador para categoría:', category.name, '→', count, 'productos')
                     
                     return (
                       <button
-                        key={category.name}
-                        onClick={() => setSelectedCategory(category.name)}
+                        key={category.id}
+                        onClick={() => handleCategorySelect(category.id)}
                         className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 ${
-                          selectedCategory === category.name
+                          selectedCategory === category.id
                             ? "border-primary bg-primary/10 shadow-lg scale-105"
                             : "border-border bg-card hover:border-primary/50 hover:shadow-md hover:scale-102"
                         }`}
@@ -375,7 +542,7 @@ export function ProductSection() {
                           <div className="absolute inset-0 flex items-end p-4">
                             <div className="text-left">
                               <h4 className="text-lg font-semibold text-white">
-                                {category.label}
+                                {category.name}
                               </h4>
                               <p className="text-sm text-white/90">
                                 {count} productos disponibles
@@ -393,14 +560,14 @@ export function ProductSection() {
                 {/* Back button */}
                 <button
                   onClick={() => setSelectedCategory("todos")}
-                  className="mb-6 flex items-center gap-2 text-primary hover:underline font-medium"
+                  className="mb-4 flex items-center gap-2 text-primary hover:underline text-sm font-medium"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                   </svg>
                   Volver a categorías
                 </button>
-
+                
                 {/* Mobile Sort Controls */}
                 <div className="mb-6 flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">
@@ -417,10 +584,8 @@ export function ProductSection() {
                       <option value="price-asc">Precio (menor a mayor)</option>
                       <option value="price-desc">Precio (mayor a menor)</option>
                     </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                      <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                      </svg>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      {getSortIcon(sortBy)}
                     </div>
                   </div>
                 </div>
@@ -462,19 +627,43 @@ export function ProductSection() {
           {/* Desktop: Always show products */}
           <div className="hidden lg:block">
             {filtered.length > 0 ? (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                {filtered.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    id={product.id}
-                    name={product.name}
-                    price={product.price}
-                    unit={product.unit}
-                    images={product.images}
-                    category={product.category_label}
-                  />
-                ))}
-              </div>
+              <>
+                {/* Desktop Sort Controls */}
+                <div className="mb-6 flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    {filtered.length} producto{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
+                  </p>
+                  <div className="relative">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as SortOption)}
+                      className="appearance-none bg-background border border-border rounded-md px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                    >
+                      <option value="name-asc">Nombre (A-Z)</option>
+                      <option value="name-desc">Nombre (Z-A)</option>
+                      <option value="price-asc">Precio (menor a mayor)</option>
+                      <option value="price-desc">Precio (mayor a menor)</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                      {getSortIcon(sortBy)}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {filtered.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      id={product.id}
+                      name={product.name}
+                      price={product.price}
+                      unit={product.unit}
+                      images={product.images}
+                      category={product.category_label}
+                    />
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
                 <p className="text-sm text-muted-foreground">

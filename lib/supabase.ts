@@ -36,6 +36,15 @@ export type Product = {
   updated_at: string
 }
 
+export type Category = {
+  id: string
+  name: string
+  description?: string
+  icon?: string
+  created_at: string
+  updated_at: string
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -43,6 +52,11 @@ export type Database = {
         Row: Product
         Insert: Omit<Product, 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>
+      }
+      categories: {
+        Row: Category
+        Insert: Omit<Category, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Category, 'id' | 'created_at' | 'updated_at'>>
       }
     }
   }
