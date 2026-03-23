@@ -18,6 +18,7 @@ interface Product {
   images: string[]
   category: string
   category_label: string
+  category_id?: string
   stock: number
   description?: string
   measure?: string
@@ -45,20 +46,30 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
         console.log('Fetching product with ID:', id)
 
-        const { data, error } = await supabase
+        const { data: productData, error: productError } = await supabase
           .from('products')
           .select('*')
           .eq('id', id)
           .single()
 
-        // Verificar si hay un error real
-        if (error && typeof error === 'object' && Object.keys(error).length > 0) {
-          console.error('Supabase error details:', error)
-          console.error('Error message:', error?.message || 'Unknown error')
-          console.error('Error details:', error?.details || 'No details')
-          console.error('Error hint:', error?.hint || 'No hint')
-          console.error('Error code:', error?.code || 'No code')
-          return
+        if (productError) {
+          throw productError
+        }
+
+        // Try to get category info separately if we have a category field
+        let categoryData = null
+        if (productData.category) {
+          const { data: catData } = await supabase
+            .from('categories')
+            .select('id, name')
+            .eq('name', productData.category)
+            .single()
+          categoryData = catData
+        }
+
+        const data = {
+          ...productData,
+          categories: categoryData
         }
 
         if (!data) {
@@ -66,9 +77,10 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
           return
         }
 
-        // Limpiar URLs temporales de las imágenes
+        // Limpiar URLs temporales de las imágenes y extraer category_id
         const cleanedProduct = {
           ...data,
+          category_id: data.categories?.id,
           images: data.images?.filter(img => 
             img && 
             img.trim() !== '' && 
@@ -148,9 +160,10 @@ function ProductPageContent({ product }: { product: Product }) {
         targetUrl = '/#productos'
         console.log('Volviendo a TODOS desde:', fromCategory)
       } else {
-        // Veníamos de una categoría específica, volver a esa categoría
-        targetUrl = `/#productos?category=${product.category}`
-        console.log('Volviendo a categoría del producto:', product.category)
+        // Veníamos de una categoría específica, volver a esa categoría usando el ID
+        const categoryId = product.category_id || product.category
+        targetUrl = `/#productos?category=${categoryId}`
+        console.log('Volviendo a categoría del producto:', categoryId, '(name:', product.category, ')')
       }
       
       // Navegar sin recargar página

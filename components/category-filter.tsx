@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Grid3X3, Layers, Mountain, Droplets, TreePine, Fence, Hammer, Lamp, Bath, Flame, LayoutGrid, PanelTop, Footprints, Wind } from "lucide-react"
+import { Grid3X3, Layers, Mountain, Droplets, TreePine, Fence, Hammer, Lamp, Bath, Flame, LayoutGrid, PanelTop, Footprints, Wind, ShowerHead, Cylinder, Box, Columns, Lightbulb, Flashlight, Zap, Waves, Home, Package, Drill, Wrench, Sofa, Toilet } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { supabase, Category } from "@/lib/supabase"
 
@@ -17,31 +17,39 @@ const getIconForCategory = (categoryName: string) => {
     'Travertinos': Mountain,
     'Marmoles': Mountain,
     'Revestimientos': Droplets,
-    'Piscina': Droplets,
+    'Piscina': Waves,
     'Pisos': LayoutGrid,
     'SPC': LayoutGrid,
     'Decks': PanelTop,
     'Paneles': PanelTop,
     'WPC': PanelTop,
     'Porcelanatos': Footprints,
-    'Bachas': Bath,
-    'Premoldeados': Layers,
-    'Adoquines': LayoutGrid,
-    'Veredas': LayoutGrid,
-    'Ladrillos': Flame,
-    'Refractarios': Flame,
+    'Bachas': Bath,          // Bañera/Baño
+    'Bañera': ShowerHead,      // Ducha (diferente a Bachas)
+    'Bañeras': ShowerHead,     // Ducha (plural)
+    'Inodoros': Toilet,        // Inodoro específico
+    'Inodoro': Toilet,        // Inodoro específico
+    'Pedestal': Cylinder,      // Pedestal
+    'Pedestales': Columns,     // Pedestales (plural diferente)
+    'Premoldeados': Package,   // Paquetes/Productos prefabricados
+    'Adoquines': Box,        // Cajas/Adoquines
+    'Veredas': Home,          // Casas/Veredas
+    'Ladrillos': Drill,       // Herramienta de construcción
+    'Refractarios': Flame,   // Fuego/resistente al calor
     'Madera': TreePine,
     'Postes': TreePine,
     'Cercos': Fence,
     'Tejidos': Fence,
-    'Mecano': Hammer,
-    'Ganadero': Hammer,
-    'Luminarias': Lamp,
-    'Totems': Lamp,
-    'Luminicos': Lamp,
-    'Mesas': Flame,
-    'Asadores': Flame,
-    'Ventiladores': Wind,
+    'Mecano': Wrench,        // Herramienta mecánica
+    'Ganadero': Hammer,       // Herramienta rural
+    'Totem': Lightbulb,       // Luz/Totem
+    'Totems': Zap,            // Electricidad/Totems (plural diferente)
+    'Luz': Flashlight,        // Linterna (diferente a Totem)
+    'Luminoso': Zap,          // Electricidad
+    'Luminarias': Lamp,       // Lámpara (diferente a otros de luz)
+    'Mesas': Sofa,           // Muebles
+    'Asadores': Flame,        // Fuego/Asado
+    'Ventiladores': Wind,     // Viento
   }
   
   // Buscar coincidencia exacta primero
@@ -173,7 +181,7 @@ export default function CategoryFilter({ selected, onSelect }: CategoryFilterPro
       <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         Categorias
       </h2>
-      <nav className="flex flex-row gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0">
+      <nav className="flex flex-row gap-2 pb-2 lg:flex-col lg:gap-1 lg:pb-0">
         {allCategories.map((cat) => {
           const Icon = cat.icon
           const isActive = selected === cat.id
