@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server"
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
-import { existsSync } from "fs"
+import { supabaseAdmin } from "@/lib/supabase-admin"
 
 export async function POST(request: Request) {
   try {
@@ -24,24 +22,28 @@ export async function POST(request: Request) {
       )
     }
 
-    // Crear directorio uploads si no existe
-    const uploadsDir = join(process.cwd(), 'public', 'images', 'uploads')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
+    // Generar nombre único
+    const filename = `${Date.now()}-${file.name}`
+
+    // Convertir archivo a buffer
+    const fileBuffer = await file.arrayBuffer()
+
+    // Subir a Supabase
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('products')
+      .upload(filename, fileBuffer, { contentType: file.type })
+
+    if (uploadError) {
+      return NextResponse.json(
+        { error: uploadError.message },
+        { status: 500 }
+      )
     }
 
-    // Generar nombre único
-    const timestamp = Date.now()
-    const filename = `${timestamp}-${file.name}`
-    const filepath = join(uploadsDir, filename)
-
-    // Guardar archivo
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
-
-    // Retornar URL pública
-    const publicUrl = `/images/uploads/${filename}`
+    // Obtener URL pública
+    const { data: { publicUrl } } = supabaseAdmin.storage
+      .from('products-images')
+      .getPublicUrl(filename)
     
     return NextResponse.json({
       message: 'File uploaded successfully',
