@@ -7,53 +7,49 @@ export async function POST(request: Request) {
     const file = formData.get('file') as File
     
     if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'No se proporcionó ningún archivo.' }, { status: 400 })
     }
 
-    // Validar que sea una imagen
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: 'Invalid file type. Only JPEG, PNG and WebP are allowed.' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Formato inválido. Solo se permite JPEG, PNG y WebP.' }, { status: 400 })
     }
 
-    // Generar nombre único
-    const filename = `${Date.now()}-${file.name}`
+    // 1. Sanitizar el nombre del archivo (reemplaza espacios por guiones y quita caracteres raros)
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '-')
+    const filename = `${Date.now()}-${sanitizedName}` 
 
-    // Convertir archivo a buffer
-    const fileBuffer = await file.arrayBuffer()
+    // 2. Convertir a Buffer de forma segura para Node.js / Vercel
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
 
-    // Subir a Supabase
-    const { error: uploadError } = await supabaseAdmin.storage
+    // 3. Subir a Supabase
+    const { data, error } = await supabaseAdmin.storage
       .from('products')
-      .upload(filename, fileBuffer, { contentType: file.type })
+      .upload(filename, buffer, {
+        contentType: file.type,
+        upsert: false
+      })
 
-    if (uploadError) {
-      return NextResponse.json(
-        { error: uploadError.message },
-        { status: 500 }
-      )
+    if (error) {
+      console.error('Error detallado de Supabase:', error)
+      return NextResponse.json({ error: `Fallo en Supabase: ${error.message}` }, { status: 500 })
     }
 
-    // Obtener URL pública
+    // 4. Obtener URL pública
     const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('products-images')
+      .from('products')
       .getPublicUrl(filename)
-    
+
     return NextResponse.json({
-      message: 'File uploaded successfully',
+      message: 'Archivo subido con éxito',
       url: publicUrl
     })
 
-  } catch (error) {
-    console.error('Upload error:', error)
+  } catch (error: any) {
+    console.error('Error general de subida:', error)
     return NextResponse.json(
-      { error: 'Failed to upload file' },
+      { error: error.message || 'Error interno del servidor al procesar la imagen.' },
       { status: 500 }
     )
   }
