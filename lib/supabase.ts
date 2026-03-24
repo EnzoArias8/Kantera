@@ -32,6 +32,8 @@ export type Product = {
   category_label: string
   stock: number
   description?: string
+  measure?: string
+  origen?: string
   created_at: string
   updated_at: string
 }

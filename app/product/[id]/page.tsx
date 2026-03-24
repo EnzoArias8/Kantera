@@ -9,6 +9,7 @@ import { StockModal } from '@/components/stock-modal'
 import { ProductStockModal } from '@/components/product-stock-modal'
 import { ProductImageGallery } from '@/components/product-image-gallery'
 import { Suspense, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface Product {
   id: string
@@ -22,6 +23,7 @@ interface Product {
   stock: number
   description?: string
   measure?: string
+  origen?: string
   variants?: Array<{
     id: string
     measure: string
@@ -118,6 +120,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
 
 function ProductPageContent({ product }: { product: Product }) {
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null)
+  const router = useRouter()
   
   // Calcular el precio más bajo (base o variantes)
   const lowestPrice = product.variants && product.variants.length > 0 
@@ -148,35 +151,33 @@ function ProductPageContent({ product }: { product: Product }) {
 
   // Volver a la categoría correcta (todos o la del producto)
   const handleBackClick = () => {
-    if (typeof window !== 'undefined') {
-      // Detectar si venimos de "todos" o "all-products"
-      const urlParams = new URLSearchParams(window.location.hash.split('?')[1])
-      const fromCategory = urlParams.get('category')
-      
-      let targetUrl
-      
-      if (fromCategory === 'todos' || fromCategory === 'all-products') {
-        // Veníamos de "todos", volver a todos
-        targetUrl = '/#productos'
-        console.log('Volviendo a TODOS desde:', fromCategory)
-      } else {
-        // Veníamos de una categoría específica, volver a esa categoría usando el ID
-        const categoryId = product.category_id || product.category
-        targetUrl = `/#productos?category=${categoryId}`
-        console.log('Volviendo a categoría del producto:', categoryId, '(name:', product.category, ')')
-      }
-      
-      // Navegar sin recargar página
-      window.location.href = targetUrl
-      
-      // Scroll automático a la sección de productos
-      setTimeout(() => {
-        const element = document.getElementById('productos')
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' })
-        }
-      }, 100)
+    // Detectar si venimos de "todos" o "all-products"
+    const urlParams = new URLSearchParams(window.location.hash.split('?')[1])
+    const fromCategory = urlParams.get('category')
+    
+    let targetUrl
+    
+    if (fromCategory === 'todos' || fromCategory === 'all-products') {
+      // Veníamos de "todos", volver a todos
+      targetUrl = '/#productos'
+      console.log('Volviendo a TODOS desde:', fromCategory)
+    } else {
+      // Veníamos de una categoría específica, volver a esa categoría usando el ID
+      const categoryId = product.category_id || product.category
+      targetUrl = `/#productos?category=${categoryId}`
+      console.log('Volviendo a categoría del producto:', categoryId, '(name:', product.category, ')')
     }
+    
+    // Navegar sin recargar página usando Next.js router
+    router.push(targetUrl)
+    
+    // Scroll automático a la sección de productos después de la navegación
+    setTimeout(() => {
+      const element = document.getElementById('productos')
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+      }
+    }, 100)
   }
 
   return (
@@ -206,24 +207,44 @@ function ProductPageContent({ product }: { product: Product }) {
             <div>
               <div className="mb-2">
                 <span className="inline-block rounded-md bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
-                  {product.category_label}
+                  {product.origen || 'Sin origen'}
                 </span>
               </div>
               <h1 className="text-3xl font-bold tracking-tight text-foreground lg:text-4xl">
                 {product.name}
               </h1>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-4xl font-bold text-primary">
-                  ${currentPrice.toLocaleString('es-AR')}
-                </span>
-                <span className="text-lg text-muted-foreground">
-                  / {currentUnit}
-                </span>
-                {currentMeasure && (
-                  <span className="text-sm text-muted-foreground ml-2">
-                    ({currentMeasure})
+              <div className="mt-4 flex justify-between items-end">
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-primary">
+                      ${currentPrice.toLocaleString('es-AR')}
+                    </span>
+                    <span className="text-lg text-muted-foreground">
+                      / {currentUnit}
+                    </span>
+                    {currentMeasure && (
+                      <span className="text-sm text-muted-foreground ml-2">
+                        ({currentMeasure})
+                      </span>
+                    )}
+                  </div>
+                  {/* Show product measure if available and no variant is selected */}
+                  {!selectedVariant && product.measure && (
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      <span className="font-medium">Medidas:</span> {product.measure}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Stock Status - Badge Style */}
+                <div className="flex items-center gap-2 mb-1">
+                  <div className={`h-2 w-2 rounded-full ${
+                    totalStock > 0 ? 'bg-green-500' : 'bg-red-500'
+                  }`} />
+                  <span className="text-sm text-muted-foreground">
+                    {totalStock > 0 ? 'En stock' : 'Sin stock'}
                   </span>
-                )}
+                </div>
               </div>
             </div>
 
@@ -265,29 +286,7 @@ function ProductPageContent({ product }: { product: Product }) {
             )}
 
             {/* Description */}
-            {product.description && (
-              <div>
-                <h2 className="mb-3 text-lg font-semibold text-foreground">Descripción</h2>
-                <p className="text-base leading-relaxed text-muted-foreground">
-                  {product.description}
-                </p>
-              </div>
-            )}
-
-            {/* Stock Status */}
-            <div>
-              <h2 className="mb-3 text-lg font-semibold text-foreground">Disponibilidad</h2>
-              <div className="flex items-center gap-2">
-                <div className={`h-2 w-2 rounded-full ${
-                  totalStock > 0 ? 'bg-green-500' : 'bg-red-500'
-                }`} />
-                <span className="text-sm text-muted-foreground">
-                  {totalStock > 0 ? 'En stock' : 'Sin stock'}
-                </span>
-              </div>
-            </div>
-
-            {/* Actions */}
+            {/* WhatsApp Button */}
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">¿Necesitas ayuda?</h2>
               <div className="w-full">
@@ -299,6 +298,15 @@ function ProductPageContent({ product }: { product: Product }) {
                 />
               </div>
             </div>
+
+            {product.description && (
+              <div>
+                <h2 className="mb-3 text-lg font-semibold text-foreground">Descripción</h2>
+                <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                  {product.description}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

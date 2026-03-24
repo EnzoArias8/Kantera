@@ -38,7 +38,7 @@ export function ProductStockModal({
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 w-full"
+      className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#128C7E] w-full"
     >
       <MessageCircle className="h-4 w-4" />
       Consultar por WhatsApp

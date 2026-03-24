@@ -11,9 +11,10 @@ interface ProductCardProps {
   unit: string
   images: string[]
   category: string
+  origen?: string
 }
 
-export function ProductCard({ id, name, price, unit, images, category }: ProductCardProps) {
+export function ProductCard({ id, name, price, unit, images, category, origen }: ProductCardProps) {
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-lg hover:border-primary/30">
       {/* Product Link */}
@@ -30,9 +31,11 @@ export function ProductCard({ id, name, price, unit, images, category }: Product
               target.src = '/images/laja-natural.jpg'
             }}
           />
-          <span className="absolute left-3 top-3 rounded-md bg-background/90 px-2.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-sm">
-            {category}
-          </span>
+          {origen && (
+            <span className="absolute left-3 top-3 rounded-md bg-background/90 px-2.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-sm">
+              {origen}
+            </span>
+          )}
         </div>
       </Link>
       
@@ -43,21 +46,23 @@ export function ProductCard({ id, name, price, unit, images, category }: Product
           </h3>
         </Link>
 
-        <div className="mt-3 flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-primary">
-            {"$"}{price.toLocaleString("es-AR")}
-          </span>
-          <span className="text-sm text-muted-foreground">/ {unit}</span>
-        </div>
+        <div className="mt-auto flex flex-col">
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-bold text-primary">
+              {"$"}{price.toLocaleString("es-AR")}
+            </span>
+            <span className="text-sm text-muted-foreground">/ {unit}</span>
+          </div>
 
-        <div className="mt-4">
-          <Link
-            href={`/product/${id}`}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90"
-          >
-            <Eye className="h-4 w-4" />
-            Ver producto
-          </Link>
+          <div className="mt-4">
+            <Link
+              href={`/product/${id}`}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90"
+            >
+              <Eye className="h-4 w-4" />
+              Ver producto
+            </Link>
+          </div>
         </div>
       </div>
     </article>

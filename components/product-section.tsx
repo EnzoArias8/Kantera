@@ -600,6 +600,7 @@ export function ProductSection() {
                       unit={product.unit}
                       images={product.images}
                       category={product.category_label}
+                      origen={product.origen}
                     />
                   ))}
                 </div>
@@ -660,6 +661,7 @@ export function ProductSection() {
                       unit={product.unit}
                       images={product.images}
                       category={product.category_label}
+                      origen={product.origen}
                     />
                   ))}
                 </div>

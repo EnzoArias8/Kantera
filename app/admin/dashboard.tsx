@@ -248,6 +248,7 @@ function ProductForm({
     category_label: product?.category_label || '',
     stock: product?.stock || 1,
     measure: product?.measure || '',
+    origen: product?.origen || '',
     description: product?.description || '',
     variants: product?.variants || []
   })
@@ -485,6 +486,16 @@ function ProductForm({
                 value={formData.measure || ''}
                 onChange={(e) => setFormData({ ...formData, measure: e.target.value })}
                 placeholder="Ej: 1.20m, 50cm, 2x1m"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Origen</label>
+              <input
+                type="text"
+                value={formData.origen || ''}
+                onChange={(e) => setFormData({ ...formData, origen: e.target.value })}
+                placeholder="Ej: Nacional, Importado, China, Italia"
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
