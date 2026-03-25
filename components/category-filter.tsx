@@ -139,18 +139,15 @@ export default function CategoryFilter({ selected, onSelect }: CategoryFilterPro
           const mappedCategories = data.map((category: any) => {
             console.log('CategoryFilter: Procesando categoría:', category)
             
-            // Formatear el nombre: convertir guiones a espacios y capitalizar
-            const formattedName = (category.name || 'Sin nombre')
-              .split('-')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-              .join(' y ')
+            // Usar directamente el label sin formatear - mantener mayúsculas originales
+            const displayName = category.label || category.name || 'Sin nombre'
             
-            console.log('CategoryFilter: Nombre formateado:', formattedName)
+            console.log('CategoryFilter: Nombre display:', displayName)
             
             return {
-              id: category.id,
-              name: formattedName,
-              icon: getIconForCategory(formattedName)
+              id: category.name,  // Usar name como ID/slug
+              name: displayName,   // Usar label como texto visible sin modificar
+              icon: getIconForCategory(displayName)
             }
           })
           
@@ -189,14 +186,14 @@ export default function CategoryFilter({ selected, onSelect }: CategoryFilterPro
             <button
               key={cat.id}
               onClick={() => handleCategorySelect(cat.id)}
-              className={`flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+              className={`flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-all text-left ${
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
-              <Icon className="h-4 w-4" />
-              {cat.name}
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="flex-1 text-left">{cat.name}</span>
             </button>
           )
         })}

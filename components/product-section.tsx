@@ -10,35 +10,33 @@ import { supabase, Product, Category } from "@/lib/supabase"
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-// Mapeo estricto de categorías (Etiqueta -> URL)
+// Mapeo definitivo de categorías (Label -> Name/slug)
 const CATEGORIES_MAP = [
-  { label: "Todos", url: "" },
-  { label: "Bachas", url: "bacha" },
-  { label: "Bañeras", url: "bañeras" },
-  { label: "Cercos y Tejidos", url: "cercos-tejidos" },
-  { label: "Inodoros", url: "inodoros" },
-  { label: "Pedestales", url: "pedestales" },
-  { label: "Porcelanatos", url: "porcelanatos" },
-  { label: "Revestimientos para Piscinas", url: "revestimiento-piscinas" },
-  { label: "Totem Lumínicos", url: "totem-luminicos" },
-  { label: "Travertinos", url: "travertinos" },
-  { label: "Ventiladores", url: "ventiladores" }
+  { label: "Bachas", url: "Bachas" },
+  { label: "Bañeras", url: "Bañeras" },
+  { label: "Cercos y Tejidos", url: "Cercos y Tejidos" },
+  { label: "Inodoros", url: "Inodoros" },
+  { label: "Pedestales", url: "Pedestales" },
+  { label: "Porcelanatos", url: "Porcelanatos" },
+  { label: "Revestimientos para Piscinas", url: "Revestimientos para Piscinas" },
+  { label: "Totem Lumínicos", url: "Totem Lumínicos" },
+  { label: "Travertinos", url: "Travertinos" },
+  { label: "Ventiladores", url: "Ventiladores" }
 ]
 
 // Obtener icono para categoría
 const getIconForCategory = (categoryUrl: string) => {
   const iconMap: { [key: string]: React.ComponentType<any> } = {
-    '': Grid3X3, // Todos
-    'bacha': Bath,
-    'bañeras': Bath,
-    'cercos-tejidos': Fence,
-    'inodoros': Droplets,
-    'pedestales': Layers,
-    'porcelanatos': Footprints,
-    'revestimiento-piscinas': Droplets,
-    'totem-luminicos': Lamp,
-    'travertinos': Mountain,
-    'ventiladores': Wind
+    'Bachas': Bath,
+    'Bañeras': Bath,
+    'Cercos y Tejidos': Fence,
+    'Inodoros': Droplets,
+    'Pedestales': Layers,
+    'Porcelanatos': Footprints,
+    'Revestimientos para Piscinas': Droplets,
+    'Totem Lumínicos': Lamp,
+    'Travertinos': Mountain,
+    'Ventiladores': Wind
   }
   
   return iconMap[categoryUrl] || Grid3X3
@@ -47,16 +45,16 @@ const getIconForCategory = (categoryUrl: string) => {
 // Mapeo de imágenes para categorías
 const getImageForCategory = (categoryId: string): string => {
   const imageMap: { [key: string]: string } = {
-    'bacha': '/images/bacha-piedra.jpg',
-    'bañeras': '/images/bacha-piedra.jpg',
-    'cercos-tejidos': '/images/cerco.jpg',
-    'inodoros': '/images/ladrillo.jpg',
-    'pedestales': '/images/premoldeado.jpg',
-    'porcelanatos': '/images/porcelanato.jpg',
-    'revestimiento-piscinas': '/images/borde-piscina.jpg',
-    'totem-luminicos': '/images/totem.jpg',
-    'travertinos': '/images/travertino.jpg',
-    'ventiladores': '/images/ladrillo.jpg'
+    'Bachas': '/images/bacha-piedra.jpg',
+    'Bañeras': '/images/bacha-piedra.jpg',
+    'Cercos y Tejidos': '/images/cerco.jpg',
+    'Inodoros': '/images/ladrillo.jpg',
+    'Pedestales': '/images/premoldeado.jpg',
+    'Porcelanatos': '/images/porcelanato.jpg',
+    'Revestimientos para Piscinas': '/images/borde-piscina.jpg',
+    'Totem Lumínicos': '/images/totem.jpg',
+    'Travertinos': '/images/travertino.jpg',
+    'Ventiladores': '/images/ladrillo.jpg'
   }
   
   return imageMap[categoryId] || '/images/laja-natural.jpg'
@@ -65,33 +63,61 @@ const getImageForCategory = (categoryId: string): string => {
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'
 
 export function ProductSection() {
-  const [selectedCategory, setSelectedCategory] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("todos")
   const [sortBy, setSortBy] = useState<SortOption>('name-asc')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false) // Cambiado a false para evitar pantalla de carga inicial
   const [categories, setCategories] = useState<Category[]>([])
 
-  // Inicializar categorías con el mapeo estricto
+  // Cargar categorías desde Supabase
   useEffect(() => {
-    // Convertir el mapeo al formato que espera el componente
-    const mappedCategories = CATEGORIES_MAP.map(cat => ({
-      id: cat.url,
-      name: cat.label,
-      icon: getIconForCategory(cat.url)
-    }))
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .order('name')
+        
+        if (error) {
+          console.error('Error fetching categories:', error)
+          return
+        }
+        
+        if (data && data.length > 0) {
+          console.log('Categorías desde Supabase:', data)
+          
+          // Mapear categorías para el componente
+          const mappedCategories = data.map((category: any) => ({
+            id: category.name,  // Usar name como ID/slug
+            name: category.label,  // Usar label como texto visible
+            icon: getIconForCategory(category.name)
+          }))
+          
+          setCategories(mappedCategories)
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
     
-    setCategories(mappedCategories)
-    setLoading(false)
+    fetchCategories()
   }, [])
 
   const fetchProducts = async (categoryFilter?: string) => {
     console.log('=== FETCH PRODUCTS INICIADO ===', 'Category:', categoryFilter || 'all')
     
     try {
-      // Construir URL con filtro de categoría si existe
-      const url = categoryFilter && categoryFilter !== '' 
-        ? `/api/products?category=${categoryFilter}` 
-        : '/api/products'
+      // Construir URL: no enviar parámetro category si es "todos" o está vacío
+      let url = '/api/products'
+      
+      if (categoryFilter && categoryFilter !== '' && categoryFilter !== 'todos') {
+        url = `/api/products?category=${categoryFilter}`
+        console.log('Aplicando filtro de categoría:', categoryFilter)
+      } else {
+        console.log('Mostrando todos los productos (sin filtro)')
+      }
       
       const response = await fetch(url, {
         method: 'GET',
@@ -131,23 +157,27 @@ export function ProductSection() {
   useEffect(() => {
     console.log('=== COMPONENTE MONTADO - DETECTANDO CATEGORÍA URL ===')
     
-    let categoryFromUrl = ""
+    let categoryFromUrl = "todos" // Por defecto, mostrar todos
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.hash.split('?')[1])
-      categoryFromUrl = urlParams.get('category') || ""
+      const urlCategory = urlParams.get('category')
       
-      if (categoryFromUrl) {
-        console.log('Categoría inicial desde URL:', categoryFromUrl)
-        setSelectedCategory(categoryFromUrl)
-        
-        // Scroll a productos después de un breve retraso
-        setTimeout(() => {
-          const element = document.getElementById('productos')
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth' })
-          }
-        }, 100)
+      if (urlCategory) {
+        console.log('Categoría inicial desde URL:', urlCategory)
+        categoryFromUrl = urlCategory
+      } else {
+        console.log('No hay categoría en URL, usando "todos"')
       }
+      
+      setSelectedCategory(categoryFromUrl)
+      
+      // Scroll a productos después de un breve retraso
+      setTimeout(() => {
+        const element = document.getElementById('productos')
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
+      }, 100)
     }
     
     // Cargar productos con el filtro de categoría
@@ -158,11 +188,9 @@ export function ProductSection() {
   useEffect(() => {
     console.log('=== CATEGORÍA CAMBIADA ===', selectedCategory)
     
-    // Solo cargar productos si no es la carga inicial
-    if (selectedCategory !== undefined) {
-      fetchProducts(selectedCategory)
-    }
-  }, [selectedCategory]) // Se ejecuta al montar y cuando cambia selectedCategory
+    // Solo cargar productos si no es la carga inicial (selectedCategory ya fue establecido)
+    fetchProducts(selectedCategory)
+  }, [selectedCategory]) // Se ejecuta cuando cambia selectedCategory
 
   // Manejar la selección de categoría con scroll a sección productos
   const handleCategorySelect = (categoryId: string) => {

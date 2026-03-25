@@ -149,22 +149,14 @@ function ProductPageContent({ product }: { product: Product }) {
       ? product.variants.reduce((sum, variant) => sum + (variant.stock || 0), 0) + (product.stock || 0)
       : product.stock || 0
 
-  // Determinar URL de vuelta para navegación
+  // URL directa para volver - sin lógica compleja
   const getBackUrl = () => {
-    // Detectar si venimos de "todos" o "all-products"
-    const urlParams = new URLSearchParams(window.location.hash.split('?')[1])
-    const fromCategory = urlParams.get('category')
-    
-    if (fromCategory === 'todos' || fromCategory === 'all-products') {
-      // Veníamos de "todos", volver a todos
-      console.log('Volviendo a TODOS desde:', fromCategory)
-      return '/#productos'
-    } else {
-      // Veníamos de una categoría específica, volver a esa categoría usando el ID
-      const categoryId = product.category_id || product.category
-      console.log('Volviendo a categoría del producto:', categoryId, '(name:', product.category, ')')
-      return `/#productos?category=${categoryId}`
+    // Usar directamente el campo category del producto para el filtro
+    if (product.category && product.category !== '') {
+      return `/#productos?category=${product.category}`
     }
+    // Si no hay categoría, volver al listado completo
+    return '/#productos'
   }
 
   return (

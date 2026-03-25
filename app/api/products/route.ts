@@ -34,10 +34,13 @@ export async function GET(request: Request) {
       .order('name')
       .limit(50);
 
-    // Aplicar filtro de categoría si se proporciona
-    if (category && category !== '') {
+    // Aplicar filtro de categoría solo si es una categoría real (no "todos")
+    if (category && category !== '' && category !== 'todos') {
       console.log('Applying category filter:', category);
+      // Filtrar por el campo category que corresponde al name de la categoría
       query = query.eq('category', category);
+    } else {
+      console.log('No filter applied - showing all products');
     }
 
     const { data: products, error } = await query;
