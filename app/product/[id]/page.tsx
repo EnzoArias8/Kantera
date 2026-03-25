@@ -149,35 +149,22 @@ function ProductPageContent({ product }: { product: Product }) {
       ? product.variants.reduce((sum, variant) => sum + (variant.stock || 0), 0) + (product.stock || 0)
       : product.stock || 0
 
-  // Volver a la categoría correcta (todos o la del producto)
-  const handleBackClick = () => {
+  // Determinar URL de vuelta para navegación
+  const getBackUrl = () => {
     // Detectar si venimos de "todos" o "all-products"
     const urlParams = new URLSearchParams(window.location.hash.split('?')[1])
     const fromCategory = urlParams.get('category')
     
-    let targetUrl
-    
     if (fromCategory === 'todos' || fromCategory === 'all-products') {
       // Veníamos de "todos", volver a todos
-      targetUrl = '/#productos'
       console.log('Volviendo a TODOS desde:', fromCategory)
+      return '/#productos'
     } else {
       // Veníamos de una categoría específica, volver a esa categoría usando el ID
       const categoryId = product.category_id || product.category
-      targetUrl = `/#productos?category=${categoryId}`
       console.log('Volviendo a categoría del producto:', categoryId, '(name:', product.category, ')')
+      return `/#productos?category=${categoryId}`
     }
-    
-    // Navegar sin recargar página usando Next.js router
-    router.push(targetUrl)
-    
-    // Scroll automático a la sección de productos después de la navegación
-    setTimeout(() => {
-      const element = document.getElementById('productos')
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
-      }
-    }, 100)
   }
 
   return (
@@ -185,13 +172,13 @@ function ProductPageContent({ product }: { product: Product }) {
       {/* Header */}
       <div className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto max-w-7xl px-4 py-4 lg:px-8">
-          <button
-            onClick={handleBackClick}
+          <Link
+            href={getBackUrl()}
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             Volver a {product.category_label}
-          </button>
+          </Link>
         </div>
       </div>
 

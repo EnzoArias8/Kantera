@@ -6,6 +6,10 @@ import CategoryFilter from "./category-filter"
 import { ProductCard } from "./product-card"
 import { supabase, Product, Category } from "@/lib/supabase"
 
+// Configuración para evitar caché de Next.js
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Mapeo de imágenes para categorías
 const getImageForCategory = (categoryId: string): string => {
   const imageMap: { [key: string]: string } = {
@@ -116,6 +120,10 @@ export function ProductSection() {
           .from('categories')
           .select('*')
           .order('name')
+          // Evitar caché de Next.js para obtener siempre datos actualizados
+          .setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+          .setHeader('Pragma', 'no-cache')
+          .setHeader('Expires', '0')
         
         if (error) {
           console.error('Error fetching categories:', error)
