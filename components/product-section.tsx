@@ -44,6 +44,24 @@ const getIconForCategory = (categoryUrl: string) => {
   return iconMap[categoryUrl] || Grid3X3
 }
 
+// Mapeo de imágenes para categorías
+const getImageForCategory = (categoryId: string): string => {
+  const imageMap: { [key: string]: string } = {
+    'bacha': '/images/bacha-piedra.jpg',
+    'bañeras': '/images/bacha-piedra.jpg',
+    'cercos-tejidos': '/images/cerco.jpg',
+    'inodoros': '/images/ladrillo.jpg',
+    'pedestales': '/images/premoldeado.jpg',
+    'porcelanatos': '/images/porcelanato.jpg',
+    'revestimiento-piscinas': '/images/borde-piscina.jpg',
+    'totem-luminicos': '/images/totem.jpg',
+    'travertinos': '/images/travertino.jpg',
+    'ventiladores': '/images/ladrillo.jpg'
+  }
+  
+  return imageMap[categoryId] || '/images/laja-natural.jpg'
+}
+
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'
 
 export function ProductSection() {
@@ -315,7 +333,7 @@ export function ProductSection() {
                     const categoryProducts = products.filter(p => p.category === category.id)
                     
                     // Usar imagen del primer producto si existe, sino imagen de categoría específica
-                    let backgroundImage = getImageForCategory(category.name.toLowerCase())
+                    let backgroundImage = getImageForCategory(category.id.toLowerCase())
                     
                     // Si hay productos en esta categoría, usar la imagen del primer producto
                     if (categoryProducts.length > 0) {
