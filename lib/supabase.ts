@@ -41,6 +41,7 @@ export type Product = {
 export type Category = {
   id: string
   name: string
+  label: string
   description?: string
   icon?: string
   created_at: string

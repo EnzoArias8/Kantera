@@ -128,18 +128,17 @@ export function ProductSection() {
           const mappedCategories = data.map((category: any) => {
             console.log('Procesando categoría:', category)
             
-            // Formatear el nombre: convertir guiones a espacios y capitalizar
-            const formattedName = (category.name || 'Sin nombre')
-              .split('-')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-              .join(' y ')
+            // Usar el campo label para mostrar, y el campo name para el ID/filtro
+            const displayName = category.label || category.name || 'Sin nombre'
+            const categoryId = category.name || category.id || 'sin-categoria'
             
-            console.log('Nombre formateado:', formattedName)
+            console.log('Nombre para mostrar:', displayName)
+            console.log('ID para filtro:', categoryId)
             
             return {
-              id: category.id,
-              name: formattedName,
-              icon: getIconForCategory(formattedName)
+              id: categoryId,
+              name: displayName,
+              icon: getIconForCategory(displayName)
             }
           })
           
@@ -325,38 +324,8 @@ export function ProductSection() {
         return true
       }
       
-      // Debug: mostrar qué está pasando
-      console.log('Filtrando producto:', p.name, 'categoría:', p.category, 'seleccionada:', selectedCategory)
-      
-      // Crear mapeo dinámico de nombres de categorías a IDs
-      const categoryNameToId: { [key: string]: string } = {}
-      
-      // Construir mapeo dinámico desde las categorías cargadas
-      categories.forEach(category => {
-        // Convertir nombre formateado a formato original (ej: "Lajas y Piedras" → "lajas-piedras")
-        const originalName = category.name.toLowerCase().replace(/ y /g, '-')
-        
-        // Mapear tanto el nombre formateado como el original
-        categoryNameToId[originalName] = category.id
-        categoryNameToId[category.name] = category.id
-        
-        // También mapear variantes parciales
-        const nameParts = category.name.toLowerCase().split(' y ')
-        nameParts.forEach(part => {
-          categoryNameToId[part] = category.id
-        })
-      })
-      
-      console.log('Mapeo dinámico construido:', categoryNameToId)
-      
-      // Obtener el ID de la categoría seleccionada
-      const expectedCategoryId = categoryNameToId[p.category as keyof typeof categoryNameToId]
-      
-      console.log('ID esperado para categoría:', p.category, '→', expectedCategoryId)
-      console.log('Comparando:', expectedCategoryId, '===', selectedCategory, '=', expectedCategoryId === selectedCategory)
-      
-      // Filtrar por ID de categoría
-      return expectedCategoryId === selectedCategory
+      // Filtrar por categoría usando el campo category del producto
+      return p.category === selectedCategory
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -478,42 +447,14 @@ export function ProductSection() {
                   </button>
                   
                   {categories.map((category) => {
-                    // Crear el mismo mapeo dinámico que se usa para filtrar
-                    const categoryNameToId: { [key: string]: string } = {}
+                    // Contar productos filtrando directamente por el campo category
+                    const count = products.filter(p => p.category === category.id).length
                     
-                    // Construir mapeo dinámico desde las categorías cargadas
-                    categories.forEach(cat => {
-                      // Convertir nombre formateado a formato original (ej: "Lajas y Piedras" → "lajas-piedras")
-                      const originalName = cat.name.toLowerCase().replace(/ y /g, '-')
-                      
-                      // Mapear tanto el nombre formateado como el original
-                      categoryNameToId[originalName] = cat.id
-                      categoryNameToId[cat.name] = cat.id
-                      
-                      // También mapear variantes parciales
-                      const nameParts = cat.name.toLowerCase().split(' y ')
-                      nameParts.forEach(part => {
-                        categoryNameToId[part] = cat.id
-                      })
-                    })
-                    
-                    // Contar productos usando el mapeo dinámico
-                    const count = products.filter(p => {
-                      const expectedCategoryId = categoryNameToId[p.category as keyof typeof categoryNameToId]
-                      return expectedCategoryId === category.id
-                    }).length
-                    
-                    // Obtener imagen del primer producto de la categoría, o imagen específica si no hay productos
-                    const categoryProducts = products.filter(p => {
-                      const expectedCategoryId = categoryNameToId[p.category as keyof typeof categoryNameToId]
-                      return expectedCategoryId === category.id
-                    })
+                    // Obtener productos de esta categoría para la imagen
+                    const categoryProducts = products.filter(p => p.category === category.id)
                     
                     // Usar imagen del primer producto si existe, sino imagen de categoría específica
-                    let backgroundImage = getImageForCategory(
-                      Object.keys(categoryNameToId).find(key => categoryNameToId[key as keyof typeof categoryNameToId] === category.id) || 
-                      category.name.toLowerCase().replace(/ y /g, '-')
-                    )
+                    let backgroundImage = getImageForCategory(category.name.toLowerCase())
                     
                     // Si hay productos en esta categoría, usar la imagen del primer producto
                     if (categoryProducts.length > 0) {
