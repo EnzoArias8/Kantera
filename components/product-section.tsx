@@ -10,168 +10,72 @@ import { supabase, Product, Category } from "@/lib/supabase"
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-// Mapeo de imágenes para categorías
-const getImageForCategory = (categoryId: string): string => {
-  const imageMap: { [key: string]: string } = {
-    'lajas-piedras': '/images/laja-natural.jpg',
-    'travertinos-marmoles': '/images/travertino.jpg',
-    'revestimientos-piscina': '/images/borde-piscina.jpg',
-    'pisos-spc': '/images/piso-spc.jpg',
-    'decks-wpc': '/images/deck-wpc.jpg',
-    'porcelanatos': '/images/porcelanato.jpg',
-    'bachas': '/images/bacha-piedra.jpg',
-    'premoldeados': '/images/premoldeado.jpg',
-    'adoquines-veredas': '/images/adoquines.jpg',
-    'ladrillos-refractarios': '/images/ladrillo-refractario.jpg',
-    'madera': '/images/postes-madera.jpg',
-    'cercos-tejidos': '/images/tejido-cerco.jpg',
-    'mecano-ganadero': '/images/mecano-ganadero.jpg',
-    'luminarias': '/images/totem-luz.jpg',
-    'asadores': '/images/asador.jpg',
-  }
-  
-  return imageMap[categoryId] || '/images/laja-natural.jpg'
-}
+// Mapeo estricto de categorías (Etiqueta -> URL)
+const CATEGORIES_MAP = [
+  { label: "Todos", url: "" },
+  { label: "Bachas", url: "bacha" },
+  { label: "Bañeras", url: "bañeras" },
+  { label: "Cercos y Tejidos", url: "cercos-tejidos" },
+  { label: "Inodoros", url: "inodoros" },
+  { label: "Pedestales", url: "pedestales" },
+  { label: "Porcelanatos", url: "porcelanatos" },
+  { label: "Revestimientos para Piscinas", url: "revestimiento-piscinas" },
+  { label: "Totem Lumínicos", url: "totem-luminicos" },
+  { label: "Travertinos", url: "travertinos" },
+  { label: "Ventiladores", url: "ventiladores" }
+]
 
-// Mapeo de iconos para categorías
-const getIconForCategory = (categoryName: string) => {
+// Obtener icono para categoría
+const getIconForCategory = (categoryUrl: string) => {
   const iconMap: { [key: string]: React.ComponentType<any> } = {
-    'Lajas': Layers,
-    'Piedras': Mountain,
-    'Travertinos': Mountain,
-    'Marmoles': Mountain,
-    'Revestimientos': Droplets,
-    'Piscina': Droplets,
-    'Pisos': LayoutGrid,
-    'SPC': LayoutGrid,
-    'Decks': PanelTop,
-    'Paneles': PanelTop,
-    'WPC': PanelTop,
-    'Porcelanatos': Footprints,
-    'Bachas': Bath,
-    'Premoldeados': Layers,
-    'Adoquines': LayoutGrid,
-    'Veredas': LayoutGrid,
-    'Ladrillos': Flame,
-    'Refractarios': Flame,
-    'Madera': TreePine,
-    'Postes': TreePine,
-    'Cercos': Fence,
-    'Tejidos': Fence,
-    'Mecano': Hammer,
-    'Ganadero': Hammer,
-    'Luminarias': Lamp,
-    'Totems': Lamp,
-    'Luminicos': Lamp,
-    'Mesas': Flame,
-    'Asadores': Flame,
-    'Ventiladores': Wind,
+    '': Grid3X3, // Todos
+    'bacha': Bath,
+    'bañeras': Bath,
+    'cercos-tejidos': Fence,
+    'inodoros': Droplets,
+    'pedestales': Layers,
+    'porcelanatos': Footprints,
+    'revestimiento-piscinas': Droplets,
+    'totem-luminicos': Lamp,
+    'travertinos': Mountain,
+    'ventiladores': Wind
   }
   
-  // Buscar coincidencia exacta primero
-  if (iconMap[categoryName]) {
-    return iconMap[categoryName]
-  }
-  
-  // Si no encuentra, buscar por palabras clave
-  const keywords = Object.keys(iconMap)
-  for (const keyword of keywords) {
-    if (categoryName.toLowerCase().includes(keyword.toLowerCase())) {
-      return iconMap[keyword]
-    }
-  }
-  
-  return Grid3X3 // Icono por defecto
+  return iconMap[categoryUrl] || Grid3X3
 }
 
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'
 
 export function ProductSection() {
-  const [selectedCategory, setSelectedCategory] = useState("todos")
+  const [selectedCategory, setSelectedCategory] = useState("")
   const [sortBy, setSortBy] = useState<SortOption>('name-asc')
   const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(false) // Cambiado a false para evitar pantalla de carga inicial
   const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
 
-  // Cargar categorías desde Supabase
+  // Inicializar categorías con el mapeo estricto
   useEffect(() => {
-    const fetchCategories = async () => {
-      // Categorías de fallback para consistencia con productos existentes
-      const fallbackCategories = [
-        { id: "lajas-piedras", name: "Lajas y Piedras", icon: Layers },
-        { id: "travertinos-marmoles", name: "Travertinos y Marmoles", icon: Mountain },
-        { id: "revestimientos-piscina", name: "Revestimientos Piscina", icon: Droplets },
-        { id: "pisos-spc", name: "Pisos SPC", icon: LayoutGrid },
-        { id: "decks-wpc", name: "Decks y Paneles WPC", icon: PanelTop },
-        { id: "porcelanatos", name: "Porcelanatos", icon: Footprints },
-        { id: "bachas", name: "Bachas de Piedra", icon: Bath },
-        { id: "premoldeados", name: "Premoldeados", icon: Layers },
-        { id: "adoquines-veredas", name: "Adoquines y Veredas", icon: LayoutGrid },
-        { id: "ladrillos-refractarios", name: "Ladrillos Refractarios", icon: Flame },
-        { id: "madera", name: "Madera y Postes", icon: TreePine },
-        { id: "cercos-tejidos", name: "Cercos y Tejidos", icon: Fence },
-        { id: "mecano-ganadero", name: "Mecano Ganadero", icon: Hammer },
-        { id: "luminarias", name: "Totems Luminicos", icon: Lamp },
-        { id: "asadores", name: "Mesas y Asadores", icon: Flame },
-      ]
-      
-      try {
-        const { data, error } = await supabase
-          .from('categories')
-          .select('*')
-          .order('name')
-          // Evitar caché de Next.js para obtener siempre datos actualizados
-          .setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-          .setHeader('Pragma', 'no-cache')
-          .setHeader('Expires', '0')
-        
-        if (error) {
-          console.error('Error fetching categories:', error)
-          console.log('Usando fallback categories')
-          setCategories(fallbackCategories)
-        } else if (data && data.length > 0) {
-          console.log('Categorías desde Supabase:', data)
-          
-          // Mapear categorías de Supabase con iconos automáticos
-          const mappedCategories = data.map((category: any) => {
-            console.log('Procesando categoría:', category)
-            
-            // Usar el campo label para mostrar, y el campo name para el ID/filtro
-            const displayName = category.label || category.name || 'Sin nombre'
-            const categoryId = category.name || category.id || 'sin-categoria'
-            
-            console.log('Nombre para mostrar:', displayName)
-            console.log('ID para filtro:', categoryId)
-            
-            return {
-              id: categoryId,
-              name: displayName,
-              icon: getIconForCategory(displayName)
-            }
-          })
-          
-          // Usar solo categorías de Supabase (sin fallback para evitar duplicados)
-          console.log('Categorías desde Supabase (solo dinámicas):', mappedCategories)
-          setCategories(mappedCategories)
-        } else {
-          console.log('No hay categorías en Supabase, usando fallback')
-          setCategories(fallbackCategories)
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error)
-        setCategories(fallbackCategories)
-      }
-    }
-
-    fetchCategories()
+    // Convertir el mapeo al formato que espera el componente
+    const mappedCategories = CATEGORIES_MAP.map(cat => ({
+      id: cat.url,
+      name: cat.label,
+      icon: getIconForCategory(cat.url)
+    }))
+    
+    setCategories(mappedCategories)
+    setLoading(false)
   }, [])
 
-  const fetchProducts = async () => {
-    console.log('=== FETCH PRODUCTS INICIADO ===')
+  const fetchProducts = async (categoryFilter?: string) => {
+    console.log('=== FETCH PRODUCTS INICIADO ===', 'Category:', categoryFilter || 'all')
     
     try {
-      // Intentar cargar productos reales primero
-      const response = await fetch('/api/products', {
+      // Construir URL con filtro de categoría si existe
+      const url = categoryFilter && categoryFilter !== '' 
+        ? `/api/products?category=${categoryFilter}` 
+        : '/api/products'
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -185,10 +89,9 @@ export function ProductSection() {
         const data = await response.json()
         console.log('Products data received:', data)
         
-        if (data.products && Array.isArray(data.products) && data.products.length > 0) {
-          console.log('Setting productos reales:', data.products.length)
+        if (data.products && Array.isArray(data.products)) {
+          console.log('Setting productos:', data.products.length, 'filtered by:', categoryFilter || 'none')
           setProducts(data.products)
-          setLoading(false)
           return
         } else {
           console.log('API returned products but array is empty or invalid:', data.products)
@@ -197,54 +100,23 @@ export function ProductSection() {
         console.log('API response not ok:', response.status)
       }
       
-      console.log('No se encontraron productos reales, usando fallback...')
+      console.log('No se encontraron productos, usando array vacío...')
     } catch (error) {
-      console.error('Error en fetch de productos reales:', error)
-      console.log('Usando fallback debido a error...')
+      console.error('Error en fetch de productos:', error)
     }
     
-    // Fallback solo si no hay productos reales
-    console.log('Mostrando productos de ejemplo...')
-    setProducts([
-      {
-        id: '1',
-        name: 'Producto de ejemplo 1',
-        price: 1000,
-        unit: 'unidad',
-        images: ['/images/logo.jpg'],
-        category: 'ejemplo',
-        category_label: 'Ejemplo',
-        stock: 10,
-        description: 'Producto de ejemplo para testing'
-      },
-      {
-        id: '2',
-        name: 'Producto de ejemplo 2',
-        price: 2000,
-        unit: 'caja',
-        images: ['/images/logo.jpg'],
-        category: 'ejemplo-2',
-        category_label: 'Ejemplo 2',
-        stock: 5,
-        description: 'Otro producto de ejemplo'
-      }
-    ])
-    
-    setLoading(false)
-    console.log('=== FETCH PRODUCTS COMPLETADO ===')
+    // Si no hay productos, establecer array vacío
+    setProducts([])
   }
 
-  // Llamar a fetchProducts cuando el componente se monta
+  // Cargar productos iniciales y detectar categoría del URL
   useEffect(() => {
-    console.log('=== COMPONENTE MONTADO - LLAMANDO FETCH PRODUCTS ===')
-    fetchProducts()
-  }, [])
-
-  // Detectar categoría del URL solo al montar el componente
-  useEffect(() => {
+    console.log('=== COMPONENTE MONTADO - DETECTANDO CATEGORÍA URL ===')
+    
+    let categoryFromUrl = ""
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.hash.split('?')[1])
-      const categoryFromUrl = urlParams.get('category')
+      categoryFromUrl = urlParams.get('category') || ""
       
       if (categoryFromUrl) {
         console.log('Categoría inicial desde URL:', categoryFromUrl)
@@ -256,10 +128,23 @@ export function ProductSection() {
           if (element) {
             element.scrollIntoView({ behavior: 'smooth' })
           }
-        }, 300)
+        }, 100)
       }
     }
-  }, []) // Solo se ejecuta al montar
+    
+    // Cargar productos con el filtro de categoría
+    fetchProducts(categoryFromUrl)
+  }, [])
+
+  // Actualizar productos cuando cambia la categoría seleccionada (sin pantalla de carga)
+  useEffect(() => {
+    console.log('=== CATEGORÍA CAMBIADA ===', selectedCategory)
+    
+    // Solo cargar productos si no es la carga inicial
+    if (selectedCategory !== undefined) {
+      fetchProducts(selectedCategory)
+    }
+  }, [selectedCategory]) // Se ejecuta al montar y cuando cambia selectedCategory
 
   // Manejar la selección de categoría con scroll a sección productos
   const handleCategorySelect = (categoryId: string) => {
@@ -326,15 +211,6 @@ export function ProductSection() {
         img !== '/images/placeholder-product.jpg'
       ) || []
     }))
-    .filter((p) => {
-      // Si es "todos" o "all-products", mostrar todos
-      if (selectedCategory === "todos" || selectedCategory === "all-products") {
-        return true
-      }
-      
-      // Filtrar por categoría usando el campo category del producto
-      return p.category === selectedCategory
-    })
     .sort((a, b) => {
       switch (sortBy) {
         case 'name-asc':
@@ -380,30 +256,7 @@ export function ProductSection() {
     }
   }
 
-  if (loading) {
-    console.log('=== AUN EN LOADING ===')
-    console.log('Loading state:', loading)
-    console.log('Products length:', products.length)
-    return (
-      <section id="productos" className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-        <div className="flex items-center justify-center py-20">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Cargando productos...</p>
-            <p className="text-xs text-muted-foreground mt-2">Debug: loading={loading.toString()}, products={products.length}</p>
-          </div>
-        </div>
-      </section>
-    )
-  }
-
-  console.log('ProductSection render:', { 
-    selectedCategory, 
-    categoriesLength: categories.length, 
-    productsLength: products.length,
-    isMobile: typeof window !== 'undefined' ? window.innerWidth < 1024 : 'unknown'
-  })
-
+  // Renderizado principal - sin pantalla de carga
   return (
     <section id="productos" className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
       <div className="flex flex-col gap-8 lg:flex-row">

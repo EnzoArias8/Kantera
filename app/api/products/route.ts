@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server"
 import { createClient } from '@supabase/supabase-js'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     console.log('Products API: Starting request...');
+    
+    // Extraer parámetros de consulta
+    const { searchParams } = new URL(request.url)
+    const category = searchParams.get('category')
+    
+    console.log('Category filter:', category);
     
     // Verificar variables de entorno
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -21,12 +27,20 @@ export async function GET() {
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     console.log('Supabase client created successfully');
 
-    // Query simple
-    const { data: products, error } = await supabase
+    // Construir query con filtro de categoría si existe
+    let query = supabase
       .from('products')
       .select('*')
       .order('name')
       .limit(50);
+
+    // Aplicar filtro de categoría si se proporciona
+    if (category && category !== '') {
+      console.log('Applying category filter:', category);
+      query = query.eq('category', category);
+    }
+
+    const { data: products, error } = await query;
 
     console.log('Query result:', { 
       productsCount: products?.length || 0, 
