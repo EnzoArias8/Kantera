@@ -43,7 +43,7 @@ export function ProductImageGallery({ product }: ProductImageGalleryProps) {
 
   return (
     <div className="space-y-4">
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-secondary">
+      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-gray-50 md:aspect-auto md:h-[600px]">
         {validImages.length > 0 ? (
           <>
             <Image
@@ -51,7 +51,7 @@ export function ProductImageGallery({ product }: ProductImageGalleryProps) {
               alt={product.name}
               width={600}
               height={600}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
               priority
             />
             
@@ -116,7 +116,7 @@ export function ProductImageGallery({ product }: ProductImageGalleryProps) {
                 alt={`${product.name} ${index + 1}`}
                 width={150}
                 height={150}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain bg-gray-50"
               />
             </button>
           ))}

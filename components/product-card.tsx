@@ -19,12 +19,12 @@ export function ProductCard({ id, name, price, unit, images, category, origen }:
     <article className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-lg hover:border-primary/30">
       {/* Product Link */}
       <Link href={`/product/${id}`} className="block">
-        <div className="relative aspect-square overflow-hidden bg-secondary">
+        <div className="relative aspect-square w-full overflow-hidden bg-gray-50">
           <Image
             src={images?.[0] || '/images/laja-natural.jpg'}
             alt={name}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-contain transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             onError={(e) => {
               const target = e.target as HTMLImageElement
