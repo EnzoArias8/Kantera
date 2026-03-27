@@ -176,58 +176,113 @@ function ProductPageContent({ product }: { product: Product }) {
 
       {/* Product Details */}
       <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8 lg:py-12">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* Image Section */}
-          <ProductImageGallery product={product} />
-
-          {/* Details Section */}
-          <div className="space-y-6">
-            {/* Header */}
-            <div>
-              <div className="mb-2">
-                <span className="inline-block rounded-md bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
-                  {product.origen || 'Sin origen'}
+        <div className="flex flex-col gap-8 md:grid md:grid-cols-2">
+          
+          {/* ENCABEZADO MÓVIL (Solo visible en celulares) */}
+          <div className="block md:hidden space-y-4">
+            {/* Origen */}
+            <div className="mb-2">
+              <span className="inline-block rounded-md bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+                {product.origen || 'Sin origen'}
+              </span>
+            </div>
+            
+            {/* Nombre del producto */}
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              {product.name}
+            </h1>
+            
+            {/* Precio y Stock */}
+            <div className="space-y-3">
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-bold text-primary">
+                  ${currentPrice.toLocaleString('es-AR')}
+                </span>
+                <span className="text-lg text-muted-foreground">
+                  / {currentUnit}
+                </span>
+                {currentMeasure && (
+                  <span className="text-sm text-muted-foreground ml-2">
+                    ({currentMeasure})
+                  </span>
+                )}
+              </div>
+              
+              {/* Show product measure if available and no variant is selected */}
+              {!selectedVariant && product.measure && (
+                <div className="text-sm text-muted-foreground">
+                  <span className="font-medium">Medidas:</span> {product.measure}
+                </div>
+              )}
+              
+              {/* Stock Status - Badge Style */}
+              <div className="flex items-center gap-2">
+                <div className={`h-2 w-2 rounded-full ${
+                  totalStock > 0 ? 'bg-green-500' : 'bg-red-500'
+                }`} />
+                <span className="text-sm text-muted-foreground">
+                  {totalStock > 0 ? 'En stock' : 'Sin stock'}
                 </span>
               </div>
-              <h1 className="text-3xl font-bold tracking-tight text-foreground lg:text-4xl">
-                {product.name}
-              </h1>
-              <div className="mt-4 flex justify-between items-end">
-                <div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-primary">
-                      ${currentPrice.toLocaleString('es-AR')}
-                    </span>
-                    <span className="text-lg text-muted-foreground">
-                      / {currentUnit}
-                    </span>
-                    {currentMeasure && (
-                      <span className="text-sm text-muted-foreground ml-2">
-                        ({currentMeasure})
+            </div>
+          </div>
+
+          {/* COLUMNA IZQUIERDA: Imágenes */}
+          <div className="order-2 md:order-1">
+            <ProductImageGallery product={product} />
+          </div>
+
+          {/* COLUMNA DERECHA: Info completa (Desktop) */}
+          <div className="order-3 md:order-2 space-y-6">
+            {/* ENCABEZADO ESCRITORIO (Solo visible en PC) */}
+            <div className="hidden md:block">
+              {/* Header */}
+              <div>
+                <div className="mb-2">
+                  <span className="inline-block rounded-md bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+                    {product.origen || 'Sin origen'}
+                  </span>
+                </div>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground lg:text-4xl">
+                  {product.name}
+                </h1>
+                <div className="mt-4 flex justify-between items-end">
+                  <div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-bold text-primary">
+                        ${currentPrice.toLocaleString('es-AR')}
                       </span>
+                      <span className="text-lg text-muted-foreground">
+                        / {currentUnit}
+                      </span>
+                      {currentMeasure && (
+                        <span className="text-sm text-muted-foreground ml-2">
+                          ({currentMeasure})
+                        </span>
+                      )}
+                    </div>
+                    {/* Show product measure if available and no variant is selected */}
+                    {!selectedVariant && product.measure && (
+                      <div className="mt-2 text-sm text-muted-foreground">
+                        <span className="font-medium">Medidas:</span> {product.measure}
+                      </div>
                     )}
                   </div>
-                  {/* Show product measure if available and no variant is selected */}
-                  {!selectedVariant && product.measure && (
-                    <div className="mt-2 text-sm text-muted-foreground">
-                      <span className="font-medium">Medidas:</span> {product.measure}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Stock Status - Badge Style */}
-                <div className="flex items-center gap-2 mb-1">
-                  <div className={`h-2 w-2 rounded-full ${
-                    totalStock > 0 ? 'bg-green-500' : 'bg-red-500'
-                  }`} />
-                  <span className="text-sm text-muted-foreground">
-                    {totalStock > 0 ? 'En stock' : 'Sin stock'}
-                  </span>
+                  
+                  {/* Stock Status - Badge Style */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`h-2 w-2 rounded-full ${
+                      totalStock > 0 ? 'bg-green-500' : 'bg-red-500'
+                    }`} />
+                    <span className="text-sm text-muted-foreground">
+                      {totalStock > 0 ? 'En stock' : 'Sin stock'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Variantes */}
+            {/* Variantes (visibles en ambas vistas) */}
             {product.variants && product.variants.length > 0 && (
               <div>
                 <h2 className="mb-3 text-lg font-semibold text-foreground">Seleccionar Medida</h2>
@@ -264,7 +319,6 @@ function ProductPageContent({ product }: { product: Product }) {
               </div>
             )}
 
-            {/* Description */}
             {/* WhatsApp Button */}
             <div className="space-y-3">
               <h2 className="text-lg font-semibold text-foreground">¿Necesitas ayuda?</h2>
@@ -278,6 +332,7 @@ function ProductPageContent({ product }: { product: Product }) {
               </div>
             </div>
 
+            {/* Description */}
             {product.description && (
               <div>
                 <h2 className="mb-3 text-lg font-semibold text-foreground">Descripción</h2>
