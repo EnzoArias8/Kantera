@@ -19,23 +19,18 @@ export function ProductCard({ id, name, price, unit, images, category, origen }:
     <article className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-lg hover:border-primary/30">
       {/* Product Link */}
       <Link href={`/product/${id}`} className="block">
-        <div className="relative w-full aspect-square bg-gray-50 overflow-hidden rounded-t-xl">
-          {/* Contenedor con padding para dar "aire" a la imagen */}
-          <div className="absolute inset-0 p-6 flex items-center justify-center">
-            <div className="relative w-full h-full">
-              <Image
-                src={images?.[0] || '/images/laja-natural.jpg'}
-                alt={name}
-                fill
-                className="object-contain transition-transform duration-300 group-hover:scale-105"
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement
-                  target.src = '/images/laja-natural.jpg'
-                }}
-              />
-            </div>
-          </div>
+        <div className="relative aspect-square overflow-hidden">
+          <Image
+            src={images?.[0] || '/images/laja-natural.jpg'}
+            alt={name}
+            fill
+            className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+            sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              target.src = '/images/laja-natural.jpg'
+            }}
+          />
           {origen && (
             <span className="absolute left-3 top-3 rounded-md bg-background/90 px-2.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-sm z-10">
               {origen}
