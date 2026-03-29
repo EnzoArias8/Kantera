@@ -24,6 +24,8 @@ interface Product {
   description?: string
   measure?: string
   origen?: string
+  caracteristicas?: string
+  precio_anterior?: number
   variants?: Array<{
     id: string
     measure: string
@@ -194,7 +196,12 @@ function ProductPageContent({ product }: { product: Product }) {
             
             {/* Precio y Stock */}
             <div className="space-y-3">
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                {product.precio_anterior && product.precio_anterior > currentPrice && (
+                  <span className="text-lg text-gray-400 line-through">
+                    ${product.precio_anterior.toLocaleString('es-AR')}
+                  </span>
+                )}
                 <span className="text-4xl font-bold text-primary">
                   ${currentPrice.toLocaleString('es-AR')}
                 </span>
@@ -207,6 +214,13 @@ function ProductPageContent({ product }: { product: Product }) {
                   </span>
                 )}
               </div>
+              {product.precio_anterior && product.precio_anterior > currentPrice && (
+                <div className="mt-1">
+                  <span className="text-lg font-medium text-green-600">
+                    {Math.round(((product.precio_anterior - currentPrice) / product.precio_anterior) * 100)}% OFF
+                  </span>
+                </div>
+              )}
               
               {/* Show product measure if available and no variant is selected */}
               {!selectedVariant && product.measure && (
@@ -248,7 +262,12 @@ function ProductPageContent({ product }: { product: Product }) {
                 </h1>
                 <div className="mt-4 flex justify-between items-end">
                   <div>
-                    <div className="flex items-baseline gap-2">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      {product.precio_anterior && product.precio_anterior > currentPrice && (
+                        <span className="text-lg text-gray-400 line-through">
+                          ${product.precio_anterior.toLocaleString('es-AR')}
+                        </span>
+                      )}
                       <span className="text-4xl font-bold text-primary">
                         ${currentPrice.toLocaleString('es-AR')}
                       </span>
@@ -261,6 +280,13 @@ function ProductPageContent({ product }: { product: Product }) {
                         </span>
                       )}
                     </div>
+                    {product.precio_anterior && product.precio_anterior > currentPrice && (
+                      <div className="mt-1">
+                        <span className="text-lg font-medium text-green-600">
+                          {Math.round(((product.precio_anterior - currentPrice) / product.precio_anterior) * 100)}% OFF
+                        </span>
+                      </div>
+                    )}
                     {/* Show product measure if available and no variant is selected */}
                     {!selectedVariant && product.measure && (
                       <div className="mt-2 text-sm text-muted-foreground">
@@ -338,6 +364,16 @@ function ProductPageContent({ product }: { product: Product }) {
                 <h2 className="mb-3 text-lg font-semibold text-foreground">Descripción</h2>
                 <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
                   {product.description}
+                </p>
+              </div>
+            )}
+
+            {/* Características */}
+            {product.caracteristicas && (
+              <div>
+                <h2 className="mb-3 text-lg font-semibold text-foreground">Características</h2>
+                <p className="text-base leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                  {product.caracteristicas}
                 </p>
               </div>
             )}

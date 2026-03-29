@@ -445,6 +445,7 @@ export function ProductSection() {
                       id={product.id}
                       name={product.name}
                       price={product.price}
+                      precio_anterior={product.precio_anterior}
                       unit={product.unit}
                       images={product.images}
                       category={product.category_label}
@@ -506,6 +507,7 @@ export function ProductSection() {
                       id={product.id}
                       name={product.name}
                       price={product.price}
+                      precio_anterior={product.precio_anterior}
                       unit={product.unit}
                       images={product.images}
                       category={product.category_label}

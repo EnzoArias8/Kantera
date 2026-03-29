@@ -241,7 +241,8 @@ function ProductForm({
 }) {
   const [formData, setFormData] = useState({
     name: product?.name || '',
-    price: product?.price || 0,
+    price: product?.price || '',
+    precio_anterior: product?.precio_anterior || '',
     unit: product?.unit || 'unidad',
     images: product?.images || [],
     category: product?.category || '',
@@ -250,6 +251,7 @@ function ProductForm({
     measure: product?.measure || '',
     origen: product?.origen || '',
     description: product?.description || '',
+    caracteristicas: product?.caracteristicas || '',
     variants: product?.variants || []
   })
   const [imageFiles, setImageFiles] = useState<File[]>([])
@@ -317,12 +319,20 @@ function ProductForm({
       // Incluir el ID si es una edición
       const productData = {
         ...formData,
-        images: processedImages
+        images: processedImages,
+        // Convertir precios a números o null
+        price: formData.price ? Number(formData.price) : 0,
+        precio_anterior: formData.precio_anterior ? Number(formData.precio_anterior) : null
       }
       
       // Eliminar variants si está vacío para evitar errores de base de datos
       if (!productData.variants || productData.variants.length === 0) {
         delete productData.variants
+      }
+      
+      // Eliminar caracteristicas si está vacío
+      if (!productData.caracteristicas || productData.caracteristicas.trim() === '') {
+        delete productData.caracteristicas
       }
       
       if (product?.id) {
@@ -439,7 +449,8 @@ function ProductForm({
                 type="number"
                 required
                 value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                placeholder="Ej: 15000"
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
@@ -450,6 +461,16 @@ function ProductForm({
                 required
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Precio Anterior (Ofertas)</label>
+              <input
+                type="number"
+                value={formData.precio_anterior}
+                onChange={(e) => setFormData({ ...formData, precio_anterior: e.target.value })}
+                placeholder="Ej: 20000 (dejar vacío si no hay oferta)"
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
@@ -511,6 +532,18 @@ function ProductForm({
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="Describe las características, usos y beneficios del producto..."
+            />
+          </div>
+
+          {/* Características */}
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">Características (Opcional)</label>
+            <textarea
+              rows={4}
+              value={formData.caracteristicas}
+              onChange={(e) => setFormData({ ...formData, caracteristicas: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="Ej:&#10;• Material: Porcelana de alta calidad&#10;• Resistencia: Alta durabilidad&#10;• Uso: Interior y exterior&#10;• Mantenimiento: Fácil limpieza"
             />
           </div>
 

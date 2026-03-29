@@ -26,12 +26,14 @@ export type Product = {
   id: string
   name: string
   price: number
+  precio_anterior?: number
   unit: string
   images: string[]
   category: string
   category_label: string
   stock: number
   description?: string
+  caracteristicas?: string
   measure?: string
   origen?: string
   created_at: string
