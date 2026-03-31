@@ -66,7 +66,7 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:px-8">
         {/* Logo */}
         <a href="#" className="flex shrink-0 items-center gap-2">
@@ -81,13 +81,13 @@ export function Navbar() {
               className="object-contain"
             />
           </div>
-          <span className="text-xl font-bold text-foreground">Kantera</span>
+          <span className="text-xl font-bold text-neutral-900">Kantera</span>
         </a>
 
         {/* Search bar - Desktop */}
         <div className="hidden flex-1 max-w-xl md:block">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-600" />
             <input
               key="desktop-search"
               type="text"
@@ -96,12 +96,12 @@ export function Navbar() {
               onChange={(e) => setSearchValue(e.target.value)}
               onFocus={() => setShowSearchResults(searchResults.length > 0)}
               suppressHydrationWarning={true}
-              className="w-full rounded-lg border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full rounded-lg border border-neutral-300 bg-neutral-50 py-2.5 pl-10 pr-4 text-sm text-neutral-900 placeholder:text-neutral-500 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             
             {/* Search Results Dropdown */}
             {showSearchResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
                 {searchResults.map((product: any) => (
                   <Link
                     key={product.id}
@@ -133,7 +133,7 @@ export function Navbar() {
             <a
               key={link.label}
               href={link.href}
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:text-neutral-900"
             >
               {link.label}
             </a>
@@ -143,7 +143,7 @@ export function Navbar() {
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted md:hidden"
+          className="rounded-md p-2 text-neutral-700 transition-colors hover:bg-neutral-100 md:hidden"
           aria-label={mobileOpen ? "Cerrar menu" : "Abrir menu"}
         >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -152,9 +152,9 @@ export function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-border bg-background px-4 pb-4 md:hidden">
+        <div className="border-t border-neutral-200 bg-white px-4 pb-4 md:hidden">
           <div className="relative mt-3">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-600" />
             <input
               key="mobile-search"
               type="text"
@@ -163,12 +163,12 @@ export function Navbar() {
               onChange={(e) => setSearchValue(e.target.value)}
               onFocus={() => setShowSearchResults(searchResults.length > 0)}
               suppressHydrationWarning={true}
-              className="w-full rounded-lg border border-input bg-background py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full rounded-lg border border-neutral-300 bg-neutral-50 py-2.5 pl-10 pr-4 text-sm text-neutral-900 placeholder:text-neutral-500 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
             
             {/* Mobile Search Results Dropdown */}
             {showSearchResults && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-neutral-200 rounded-lg shadow-lg max-h-64 overflow-y-auto z-50">
                 {searchResults.map((product: any) => (
                   <Link
                     key={product.id}
@@ -199,7 +199,7 @@ export function Navbar() {
                 key={link.label}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="rounded-md px-3 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
               >
                 {link.label}
               </a>

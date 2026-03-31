@@ -174,11 +174,11 @@ export default function CategoryFilter({ selected, onSelect }: CategoryFilterPro
   ]
 
   return (
-    <aside className="w-full shrink-0 lg:w-60">
+    <aside className="w-full shrink-0 lg:w-60 md:sticky md:top-24 h-fit">
       <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         Categorias
       </h2>
-      <nav className="flex flex-row gap-2 pb-2 lg:flex-col lg:gap-1 lg:pb-0">
+      <nav className="flex flex-row gap-2 pb-2 lg:flex-col lg:gap-1 lg:pb-0 max-h-[calc(100vh-8rem)] overflow-y-auto">
         {allCategories.map((cat) => {
           const Icon = cat.icon
           const isActive = selected === cat.id
