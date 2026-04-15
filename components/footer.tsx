@@ -31,7 +31,7 @@ export function Footer() {
               <span className="text-xl font-bold tracking-tight text-white">Kantera</span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/60">
-              Superficies & Diseño. Especialistas en darle la terminación perfecta a tu obra.
+              El detalle que define tu espacio. Somos especialistas en darle la terminación perfecta a tu obra. Natural, funcional y atemporal.
             </p>
           </div>
 
@@ -96,7 +96,9 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://www.instagram.com/kantera.hogar?igsh=MWdlaXVnNjJ4bGZsdg=="
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2.5 text-sm text-white/80 transition-colors hover:text-white"
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/90 backdrop-blur-sm">

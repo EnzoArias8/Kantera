@@ -320,9 +320,9 @@ function ProductForm({
       const productData = {
         ...formData,
         images: processedImages,
-        // Convertir precios a números o null
-        price: formData.price ? Number(formData.price) : 0,
-        precio_anterior: formData.precio_anterior ? Number(formData.precio_anterior) : null
+        // Mantener precios como texto (la BD ahora acepta texto)
+        price: formData.price || '',
+        precio_anterior: formData.precio_anterior || null
       }
       
       // Eliminar variants si está vacío para evitar errores de base de datos
@@ -446,11 +446,11 @@ function ProductForm({
             <div>
               <label className="block text-sm font-medium text-gray-700">Precio</label>
               <input
-                type="number"
+                type="text"
                 required
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="Ej: 15000"
+                placeholder="Ej: 15000 o Consultar"
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>
@@ -467,10 +467,10 @@ function ProductForm({
             <div>
               <label className="block text-sm font-medium text-gray-700">Precio Anterior (Ofertas)</label>
               <input
-                type="number"
+                type="text"
                 value={formData.precio_anterior}
                 onChange={(e) => setFormData({ ...formData, precio_anterior: e.target.value })}
-                placeholder="Ej: 20000 (dejar vacío si no hay oferta)"
+                placeholder="Ej: 20000 o dejar vacío si no hay oferta"
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
             </div>

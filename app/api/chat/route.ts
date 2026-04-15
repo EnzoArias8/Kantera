@@ -24,16 +24,29 @@ export async function POST(req: Request) {
     const catalogContext = products?.map(product => {
       const variants = product.variants || [];
       const variantInfo = variants.length > 0 
-        ? `\n  Variantes: ${variants.map((v: any) => `- ${v.measure}: $${v.price} (Stock: ${v.stock})`).join(', ')}` 
+        ? `\n  Variantes: ${variants.map((v: any) => `- ${v.measure}: ${v.price} (Stock: ${v.stock})`).join(', ')}` 
         : '';
       
-      // Lógica para detectar si está en oferta
-      const isOferta = product.precio_anterior && product.precio_anterior > product.price;
+      // Función para validar si un valor es numérico
+      const isNumeric = (val: any) => {
+        return val !== undefined && val !== null && val !== '' && !isNaN(Number(val));
+      };
+      
+      // Lógica para detectar si está en oferta (solo si ambos son numéricos)
+      const isOferta = isNumeric(product.price) && isNumeric(product.precio_anterior) && Number(product.precio_anterior) > Number(product.price);
       const ofertaText = isOferta ? `\n  ¡ESTADO: EN OFERTA! (Precio anterior: $${product.precio_anterior})` : '';
       const caracteristicasText = product.caracteristicas ? `\n  Características: ${product.caracteristicas}` : '';
       
+      // Formatear precio para el contexto
+      const formatPrice = (priceValue: any) => {
+        if (!priceValue || priceValue === '') return 'Consultar';
+        return isNumeric(priceValue) ? `$${Number(priceValue).toLocaleString("es-AR")}` : priceValue;
+      };
+      
+      const unitText = isNumeric(product.price) ? ` por ${product.unit || 'unidad'}` : '';
+      
       return `${product.name} - ${product.category_label || product.category}
-  Precio actual: $${(product.price || 0).toLocaleString('es-AR')} por ${product.unit || 'unidad'}${ofertaText}
+  Precio actual: ${formatPrice(product.price)}${unitText}${ofertaText}
   Descripción: ${product.description || 'Sin descripción'}${caracteristicasText}
   Stock: ${product.stock || 0} unidades
   Medida: ${product.measure || 'Estándar'}${variantInfo}`;

@@ -25,8 +25,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 export type Product = {
   id: string
   name: string
-  price: number
-  precio_anterior?: number
+  price: string
+  precio_anterior?: string
   unit: string
   images: string[]
   category: string

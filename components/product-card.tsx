@@ -7,8 +7,8 @@ import Link from "next/link"
 interface ProductCardProps {
   id: string
   name: string
-  price: number
-  precio_anterior?: number
+  price: string
+  precio_anterior?: string
   unit: string
   images: string[]
   category: string
@@ -16,6 +16,21 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ id, name, price, precio_anterior, unit, images, category, origen }: ProductCardProps) {
+  // Función para validar si un valor es numérico
+  const isNumeric = (val: string | undefined) => {
+    return val !== undefined && val !== null && val !== '' && !isNaN(Number(val));
+  };
+
+  // Calcular oferta solo si ambos precios son numéricos
+  const isOferta = isNumeric(price) && isNumeric(precio_anterior) && Number(precio_anterior) > Number(price);
+  const discountPercentage = isOferta ? Math.round(((Number(precio_anterior) - Number(price)) / Number(precio_anterior)) * 100) : 0;
+
+  // Formatear precio para display
+  const formatPrice = (priceValue: string | undefined) => {
+    if (!priceValue || priceValue === '') return '';
+    return isNumeric(priceValue) ? `$${Number(priceValue).toLocaleString("es-AR")}` : priceValue;
+  };
+
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-lg hover:border-primary/30">
       {/* Product Link */}
@@ -37,7 +52,7 @@ export function ProductCard({ id, name, price, precio_anterior, unit, images, ca
               {origen}
             </span>
           )}
-          {precio_anterior && precio_anterior > price && (
+          {isOferta && (
             <span className="absolute right-3 top-3 rounded-md bg-red-500 px-2.5 py-1 text-xs font-medium text-white z-10">
               OFERTA
             </span>
@@ -53,24 +68,26 @@ export function ProductCard({ id, name, price, precio_anterior, unit, images, ca
               {name}
             </h3>
           </Link>
-          {precio_anterior && precio_anterior > price && (
+          {isOferta && (
             <span className="text-sm font-medium text-green-600 whitespace-nowrap">
-              {Math.round(((precio_anterior - price) / precio_anterior) * 100)}% OFF
+              {discountPercentage}% OFF
             </span>
           )}
         </div>
 
         <div className="mt-auto flex flex-col">
           <div className="flex items-baseline gap-2">
-            {precio_anterior && precio_anterior > price && (
+            {isOferta && (
               <span className="text-sm text-gray-400 line-through">
-                ${precio_anterior.toLocaleString("es-AR")}
+                {formatPrice(precio_anterior)}
               </span>
             )}
             <span className="font-bold text-lg text-primary">
-              ${price.toLocaleString("es-AR")}
+              {formatPrice(price)}
             </span>
-            <span className="text-sm text-muted-foreground">/ {unit}</span>
+            {isNumeric(price) && (
+              <span className="text-sm text-muted-foreground">/ {unit}</span>
+            )}
           </div>
 
           <div className="mt-4">

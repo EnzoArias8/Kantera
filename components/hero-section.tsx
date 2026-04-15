@@ -21,11 +21,16 @@ export function HeroSection() {
             SUPERFICIES & DISEÑO
           </p>
           <h1 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Texturas que transforman espacios
+            EL DETALLE QUE DEFINE TU ESPACIO
           </h1>
-          <p className="mt-6 text-pretty text-lg leading-relaxed text-white/70">
-            Somos especialistas en darle la terminación perfecta a tu obra. Ofrecemos el catálogo más completo de la región en piedras naturales, revestimientos para piscinas y soluciones para exterior. Asesoramiento técnico, stock permanente y la calidad garantizada que tu proyecto necesita para pasar de los planos a la realidad.
-          </p>
+          <div className="space-y-2">
+            <p className="text-pretty text-lg leading-relaxed text-white/70">
+              Somos especialistas en darle la terminación perfecta a tu obra.
+            </p>
+            <p className="text-pretty text-lg leading-relaxed text-white/70">
+              Natural, funcional y atemporal.
+            </p>
+          </div>
           <div className="mt-10 flex items-center justify-center">
             <a
               href="#productos"

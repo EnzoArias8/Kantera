@@ -10,7 +10,7 @@ const _inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
   title: 'Kantera - Superficies & Diseño',
-  description: 'Somos especialistas en darle la terminación perfecta a tu obra. Ofrecemos el catálogo más completo de la región en piedras naturales, revestimientos para piscinas y soluciones para exterior. Asesoramiento técnico, stock permanente y la calidad garantizada que tu proyecto necesita para pasar de los planos a la realidad.',
+  description: 'Somos especialistas en darle la terminación perfecta a tu obra.            Natural, funcional y atemporal.',
   icons: {
     icon: '/images/logo.jpg',
     shortcut: '/images/logo.jpg',

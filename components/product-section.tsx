@@ -63,9 +63,10 @@ const getImageForCategory = (categoryId: string): string => {
 type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc'
 
 export function ProductSection() {
-  const [selectedCategory, setSelectedCategory] = useState("todos")
-  const [sortBy, setSortBy] = useState<SortOption>('name-asc')
   const [products, setProducts] = useState<Product[]>([])
+  const [selectedCategory, setSelectedCategory] = useState("todos")
+  const [isInProductsSection, setIsInProductsSection] = useState(false)
+  const [sortBy, setSortBy] = useState<SortOption>('name-asc')
   const [loading, setLoading] = useState(false) // Cambiado a false para evitar pantalla de carga inicial
   const [categories, setCategories] = useState<Category[]>([])
 
@@ -157,32 +158,66 @@ export function ProductSection() {
   useEffect(() => {
     console.log('=== COMPONENTE MONTADO - DETECTANDO CATEGORÍA URL ===')
     
-    let categoryFromUrl = "todos" // Por defecto, mostrar todos
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.hash.split('?')[1])
-      const urlCategory = urlParams.get('category')
+    const detectCategoryFromUrl = () => {
+      let categoryFromUrl = "todos" // Por defecto, mostrar todos
+      let inProductsSection = false
       
-      if (urlCategory) {
-        console.log('Categoría inicial desde URL:', urlCategory)
-        categoryFromUrl = urlCategory
-      } else {
-        console.log('No hay categoría en URL, usando "todos"')
-      }
-      
-      setSelectedCategory(categoryFromUrl)
-      
-      // Scroll a productos después de un breve retraso
-      setTimeout(() => {
-        const element = document.getElementById('productos')
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' })
+      if (typeof window !== 'undefined') {
+        // Solo procesar si el hash es #productos o #productos?category=...
+        const currentHash = window.location.hash
+        console.log('Hash actual:', currentHash)
+        
+        if (currentHash.startsWith('#productos')) {
+          inProductsSection = true
+          const urlParams = new URLSearchParams(window.location.hash.split('?')[1])
+          const urlCategory = urlParams.get('category')
+          
+          if (urlCategory) {
+            console.log('Categoría desde URL:', urlCategory)
+            categoryFromUrl = urlCategory
+          } else {
+            console.log('URL es #productos sin categoría, usando "todos"')
+          }
+          
+          setSelectedCategory(categoryFromUrl)
+          fetchProducts(categoryFromUrl)
+        } else {
+          console.log('No es sección de productos, ignorando (hash:', currentHash, ')')
+          // Si no es #productos, no hacer nada (estamos en inicio)
+          setSelectedCategory("todos") // Resetear a todos para mostrar categorías
         }
-      }, 100)
+        
+        setIsInProductsSection(inProductsSection)
+      }
+    }
+
+    detectCategoryFromUrl()
+    
+    // Listener para cambios en el hash (navegación hacia atrás)
+    const handleHashChange = () => {
+      console.log('=== HASH CAMBIADO ===', window.location.hash)
+      detectCategoryFromUrl()
     }
     
-    // Cargar productos con el filtro de categoría
-    fetchProducts(categoryFromUrl)
+    window.addEventListener('hashchange', handleHashChange)
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange)
+    }
   }, [])
+
+  // Manejar la selección de categoría con scroll a sección productos
+  const handleCategorySelect = (categoryId: string) => {
+    setSelectedCategory(categoryId)
+    
+    // Hacer scroll a la sección de productos con retraso para móvil
+    setTimeout(() => {
+      const element = document.getElementById('productos')
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+      }
+    }, 300)
+  }
 
   // Actualizar productos cuando cambia la categoría seleccionada (sin pantalla de carga)
   useEffect(() => {
@@ -191,42 +226,6 @@ export function ProductSection() {
     // Solo cargar productos si no es la carga inicial (selectedCategory ya fue establecido)
     fetchProducts(selectedCategory)
   }, [selectedCategory]) // Se ejecuta cuando cambia selectedCategory
-
-  // Manejar la selección de categoría con scroll a sección productos
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId)
-    
-    // Hacer scroll a la sección de productos con retraso para móvil
-    if (typeof window !== 'undefined') {
-      // Pequeño retraso para asegurar que el DOM se actualice
-      setTimeout(() => {
-        // Scroll suave a la sección #productos
-        const productosElement = document.getElementById('productos')
-        if (productosElement) {
-          console.log('Haciendo scroll a productos element')
-          productosElement.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start',
-            inline: 'nearest'
-          })
-        } else {
-          // Fallback: scroll al principio de la página
-          console.log('Fallback: scroll al principio de página')
-          window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          })
-        }
-      }, 100) // 100ms de retraso
-      
-      // Actualizar URL
-      if (categoryId === "todos" || categoryId === "all-products") {
-        window.history.replaceState(null, '', '#productos')
-      } else {
-        window.history.replaceState(null, '', `#productos-${categoryId}`)
-      }
-    }
-  }
 
   // Actualizar el hash cuando cambia la categoría seleccionada
   useEffect(() => {
@@ -314,7 +313,7 @@ export function ProductSection() {
         <div className="flex-1">
           {/* Mobile: Show categories list, Desktop: Show products */}
           <div className="lg:hidden">
-            {selectedCategory === "todos" ? (
+            {!isInProductsSection ? (
               <div className="space-y-4">
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold text-foreground mb-3">
@@ -417,10 +416,7 @@ export function ProductSection() {
                 </button>
                 
                 {/* Mobile Sort Controls */}
-                <div className="mb-6 flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    {filtered.length} producto{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
-                  </p>
+                <div className="mb-6 flex items-center justify-end">
                   <div className="relative">
                     <select
                       value={sortBy}
@@ -479,10 +475,7 @@ export function ProductSection() {
             {filtered.length > 0 ? (
               <>
                 {/* Desktop Sort Controls */}
-                <div className="mb-6 flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    {filtered.length} producto{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
-                  </p>
+                <div className="mb-6 flex items-center justify-end">
                   <div className="relative">
                     <select
                       value={sortBy}

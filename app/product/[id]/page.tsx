@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation'
 interface Product {
   id: string
   name: string
-  price: number
+  price: string
   unit: string
   images: string[]
   category: string
@@ -25,11 +25,11 @@ interface Product {
   measure?: string
   origen?: string
   caracteristicas?: string
-  precio_anterior?: number
+  precio_anterior?: string
   variants?: Array<{
     id: string
     measure: string
-    price: number
+    price: string
     unit: string
     stock: number
   }>
@@ -124,14 +124,33 @@ function ProductPageContent({ product }: { product: Product }) {
   const [selectedVariant, setSelectedVariant] = useState<string | null>(null)
   const router = useRouter()
   
-  // Calcular el precio más bajo (base o variantes)
-  const lowestPrice = product.variants && product.variants.length > 0 
-    ? Math.min(product.price, ...product.variants.map(v => v.price))
-    : product.price
+  // Función para validar si un valor es numérico
+  const isNumeric = (val: string | undefined) => {
+    return val !== undefined && val !== null && val !== '' && !isNaN(Number(val));
+  };
+
+  // Función para formatear precio
+  const formatPrice = (priceValue: string | undefined) => {
+    if (!priceValue || priceValue === '') return '';
+    return isNumeric(priceValue) ? `$${Number(priceValue).toLocaleString("es-AR")}` : priceValue;
+  };
+
+  // Calcular el precio más bajo (solo si son numéricos)
+  const getLowestNumericPrice = () => {
+    const basePrice = isNumeric(product.price) ? Number(product.price) : Infinity;
+    const variantPrices = product.variants 
+      ? product.variants
+          .filter(v => isNumeric(v.price))
+          .map(v => Number(v.price))
+      : [];
+    
+    const allPrices = [basePrice, ...variantPrices].filter(p => p !== Infinity);
+    return allPrices.length > 0 ? Math.min(...allPrices) : null;
+  };
 
   // Determinar precio actual según selección
   const currentPrice = selectedVariant 
-    ? product.variants?.find(v => v.id === selectedVariant)?.price
+    ? product.variants?.find(v => v.id === selectedVariant)?.price || product.price
     : product.price
 
   // Determinar unidad actual según selección
@@ -151,13 +170,13 @@ function ProductPageContent({ product }: { product: Product }) {
       ? product.variants.reduce((sum, variant) => sum + (variant.stock || 0), 0) + (product.stock || 0)
       : product.stock || 0
 
-  // URL directa para volver - sin lógica compleja
+  // Validar si hay oferta
+  const isOferta = isNumeric(currentPrice) && isNumeric(product.precio_anterior) && Number(product.precio_anterior) > Number(currentPrice);
+  const discountPercentage = isOferta ? Math.round(((Number(product.precio_anterior) - Number(currentPrice)) / Number(product.precio_anterior)) * 100) : 0;
+
+  // URL directa para volver - al catálogo de productos
   const getBackUrl = () => {
-    // Usar directamente el campo category del producto para el filtro
-    if (product.category && product.category !== '') {
-      return `/#productos?category=${product.category}`
-    }
-    // Si no hay categoría, volver al listado completo
+    // Siempre volver al catálogo de productos
     return '/#productos'
   }
 
@@ -171,7 +190,7 @@ function ProductPageContent({ product }: { product: Product }) {
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver a {product.category_label}
+            Volver al catálogo
           </Link>
         </div>
       </div>
@@ -197,27 +216,29 @@ function ProductPageContent({ product }: { product: Product }) {
             {/* Precio y Stock */}
             <div className="space-y-3">
               <div className="flex items-baseline gap-2 flex-wrap">
-                {product.precio_anterior && product.precio_anterior > currentPrice && (
+                {isOferta && (
                   <span className="text-lg text-gray-400 line-through">
-                    ${product.precio_anterior.toLocaleString('es-AR')}
+                    {formatPrice(product.precio_anterior)}
                   </span>
                 )}
                 <span className="text-4xl font-bold text-primary">
-                  ${currentPrice.toLocaleString('es-AR')}
+                  {formatPrice(currentPrice)}
                 </span>
-                <span className="text-lg text-muted-foreground">
-                  / {currentUnit}
-                </span>
+                {isNumeric(currentPrice) && (
+                  <span className="text-lg text-muted-foreground">
+                    / {currentUnit}
+                  </span>
+                )}
                 {currentMeasure && (
                   <span className="text-sm text-muted-foreground ml-2">
                     ({currentMeasure})
                   </span>
                 )}
               </div>
-              {product.precio_anterior && product.precio_anterior > currentPrice && (
+              {isOferta && (
                 <div className="mt-1">
                   <span className="text-lg font-medium text-green-600">
-                    {Math.round(((product.precio_anterior - currentPrice) / product.precio_anterior) * 100)}% OFF
+                    {discountPercentage}% OFF
                   </span>
                 </div>
               )}
@@ -263,27 +284,29 @@ function ProductPageContent({ product }: { product: Product }) {
                 <div className="mt-4 flex justify-between items-end">
                   <div>
                     <div className="flex items-baseline gap-2 flex-wrap">
-                      {product.precio_anterior && product.precio_anterior > currentPrice && (
+                      {isOferta && (
                         <span className="text-lg text-gray-400 line-through">
-                          ${product.precio_anterior.toLocaleString('es-AR')}
+                          {formatPrice(product.precio_anterior)}
                         </span>
                       )}
                       <span className="text-4xl font-bold text-primary">
-                        ${currentPrice.toLocaleString('es-AR')}
+                        {formatPrice(currentPrice)}
                       </span>
-                      <span className="text-lg text-muted-foreground">
-                        / {currentUnit}
-                      </span>
+                      {isNumeric(currentPrice) && (
+                        <span className="text-lg text-muted-foreground">
+                          / {currentUnit}
+                        </span>
+                      )}
                       {currentMeasure && (
                         <span className="text-sm text-muted-foreground ml-2">
                           ({currentMeasure})
                         </span>
                       )}
                     </div>
-                    {product.precio_anterior && product.precio_anterior > currentPrice && (
+                    {isOferta && (
                       <div className="mt-1">
                         <span className="text-lg font-medium text-green-600">
-                          {Math.round(((product.precio_anterior - currentPrice) / product.precio_anterior) * 100)}% OFF
+                          {discountPercentage}% OFF
                         </span>
                       </div>
                     )}
@@ -323,7 +346,7 @@ function ProductPageContent({ product }: { product: Product }) {
                     }`}
                   >
                     <div className="font-medium">{product.measure || 'Unidad básica'}</div>
-                    <div className="text-xs">${product.price.toLocaleString('es-AR')}</div>
+                    <div className="text-xs">{formatPrice(product.price)}</div>
                   </button>
                   
                   {/* Variantes */}
@@ -338,7 +361,7 @@ function ProductPageContent({ product }: { product: Product }) {
                       }`}
                     >
                       <div className="font-medium">{variant.measure}</div>
-                      <div className="text-xs">${variant.price.toLocaleString('es-AR')}</div>
+                      <div className="text-xs">{formatPrice(variant.price)}</div>
                     </button>
                   ))}
                 </div>
