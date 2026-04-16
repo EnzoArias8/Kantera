@@ -1,11 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Search, X, Menu } from "lucide-react"
-import Image from "next/image"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { supabase, Product } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { Search, Menu, X } from "lucide-react"
+import { Playfair_Display } from 'next/font/google'
+
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700'] 
+})
+
+import { supabase, Product } from "@/lib/supabase"
 
 const navLinks = [
   { label: "Inicio", href: "#" },
@@ -81,7 +88,7 @@ export function Navbar() {
               className="object-contain"
             />
           </div>
-          <span className="text-xl font-bold text-neutral-900">Kantera</span>
+          <span className={`${playfair.className} text-xl font-bold text-neutral-900`}>Kantera</span>
         </a>
 
         {/* Search bar - Desktop */}

@@ -1,8 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import Image from "next/image"
+import { Playfair_Display } from 'next/font/google'
+
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700'] 
+})
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
@@ -70,7 +77,7 @@ export function LoginForm() {
             <h2 className="text-4xl font-bold text-white mb-2">
               Panel de Administración
             </h2>
-            <p className="text-lg text-white/90">
+            <p className={`${playfair.className} text-lg text-white/90`}>
               Kantera Materiales
             </p>
           </div>

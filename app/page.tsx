@@ -12,19 +12,29 @@ export default function Page() {
   const [showSplash, setShowSplash] = useState(true)
 
   useEffect(() => {
+    // DEBUG: Limpiar sessionStorage para pruebas (comentar en producción)
+    sessionStorage.removeItem('has-visited-kantera')
+    
     // Verificar si es la primera visita o navegación interna
     const hasVisited = sessionStorage.getItem('has-visited-kantera')
     
+    console.log('=== DEBUG: hasVisited ===', hasVisited)
+    
     if (hasVisited) {
       // Si ya visitó, no mostrar splash screen
+      console.log('=== DEBUG: Omitiendo splash screen ===')
       setShowSplash(false)
     } else {
-      // Primera visita, marcar como visitado
-      sessionStorage.setItem('has-visited-kantera', 'true')
+      // Primera visita, mostrar splash screen
+      console.log('=== DEBUG: Mostrando splash screen ===')
+      setShowSplash(true)
     }
   }, [])
 
   const handleSplashFinish = useCallback(() => {
+    console.log('=== DEBUG: Splash screen terminado ===')
+    // Configurar sessionStorage solo después de que el splash screen termine
+    sessionStorage.setItem('has-visited-kantera', 'true')
     setShowSplash(false)
   }, [])
 

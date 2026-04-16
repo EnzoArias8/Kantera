@@ -1,5 +1,11 @@
 import Image from "next/image"
 import { ArrowDown } from "lucide-react"
+import { Playfair_Display } from 'next/font/google'
+
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700'] 
+})
 
 export function HeroSection() {
   return (
@@ -20,7 +26,7 @@ export function HeroSection() {
           <p className="mb-4 inline-block text-sm font-semibold uppercase tracking-widest text-primary bg-white/90 px-4 py-2 rounded-lg backdrop-blur-sm">
             SUPERFICIES & DISEÑO
           </p>
-          <h1 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className={`${playfair.className} text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl`}>
             EL DETALLE QUE DEFINE TU ESPACIO
           </h1>
           <div className="space-y-2">

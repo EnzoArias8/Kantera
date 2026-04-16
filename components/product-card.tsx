@@ -28,7 +28,13 @@ export function ProductCard({ id, name, price, precio_anterior, unit, images, ca
   // Formatear precio para display
   const formatPrice = (priceValue: string | undefined) => {
     if (!priceValue || priceValue === '') return '';
-    return isNumeric(priceValue) ? `$${Number(priceValue).toLocaleString("es-AR")}` : priceValue;
+    if (!isNumeric(priceValue)) return priceValue;
+    
+    // Formateo manual para asegurar separadores de miles en todos los dispositivos
+    const number = Number(priceValue);
+    const formatted = number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    
+    return `$${formatted}`;
   };
 
   return (

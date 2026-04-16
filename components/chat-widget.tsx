@@ -7,6 +7,12 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import { Playfair_Display } from 'next/font/google'
+
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700'] 
+})
 
 interface Message {
   id: string
@@ -168,8 +174,8 @@ export function ChatWidget() {
         {showWelcome && (
           <div className="fixed bottom-28 right-4 z-50 animate-fade-in md:bottom-32 md:right-6">
             <div className="bg-amber-900 text-white px-4 py-2 rounded-lg shadow-lg max-w-xs">
-              <p className="text-sm font-medium">
-                ¡Hola! Soy el chatbot de Kantera
+              <p className={`${playfair.className} text-sm font-medium`}>
+                ¡Hola! Soy el chatbot de <span className={playfair.className}>Kantera</span>
               </p>
               <div className="absolute -bottom-2 right-4 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-amber-900"></div>
             </div>
@@ -194,7 +200,7 @@ export function ChatWidget() {
         {/* Header */}
         <CardHeader className="bg-amber-900 text-white px-4 py-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold flex items-center gap-3">
+            <CardTitle className={`${playfair.className} text-lg font-semibold flex items-center gap-3`}>
               <img 
                 src="/images/chatbot.png" 
                 alt="Kantera Bot" 
@@ -231,8 +237,8 @@ export function ChatWidget() {
                     alt="Kantera Bot" 
                     className="w-20 h-20 mx-auto mb-3 rounded-full object-cover"
                   />
-                  <p className="text-base font-semibold text-amber-700 mb-2">
-                    ¡Hola! soy el chatbot de Kantera
+                  <p className={`${playfair.className} text-base font-semibold text-amber-700 mb-2`}>
+                    ¡Hola! soy el chatbot de <span className={playfair.className}>Kantera</span>
                   </p>
                   <p className="text-sm text-muted-foreground">
                     ¿En qué puedo ayudarte hoy?

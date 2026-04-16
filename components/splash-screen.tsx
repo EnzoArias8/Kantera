@@ -2,6 +2,12 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
+import { Playfair_Display } from 'next/font/google'
+
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700', '900'] 
+})
 
 export function SplashScreen({ onFinish }: { onFinish: () => void }) {
   const [phase, setPhase] = useState<"enter" | "visible" | "exit">("enter")
@@ -45,7 +51,7 @@ export function SplashScreen({ onFinish }: { onFinish: () => void }) {
         </div>
         <div className="space-y-2">
           <h1 
-            className={`text-4xl font-black tracking-widest text-white sm:text-5xl transition-all duration-1000 delay-500 ease-out ${
+            className={`${playfair.className} text-4xl font-black tracking-widest text-white sm:text-5xl transition-all duration-1000 delay-500 ease-out ${
               phase === "enter"
                 ? "translate-y-4 opacity-0"
                 : "translate-y-0 opacity-100"

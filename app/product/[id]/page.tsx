@@ -132,7 +132,13 @@ function ProductPageContent({ product }: { product: Product }) {
   // Función para formatear precio
   const formatPrice = (priceValue: string | undefined) => {
     if (!priceValue || priceValue === '') return '';
-    return isNumeric(priceValue) ? `$${Number(priceValue).toLocaleString("es-AR")}` : priceValue;
+    if (!isNumeric(priceValue)) return priceValue;
+    
+    // Formateo manual para asegurar separadores de miles en todos los dispositivos
+    const number = Number(priceValue);
+    const formatted = number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    
+    return `$${formatted}`;
   };
 
   // Calcular el precio más bajo (solo si son numéricos)

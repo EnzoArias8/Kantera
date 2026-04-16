@@ -1,5 +1,12 @@
 import Image from "next/image"
+import Link from "next/link"
 import { MapPin, Phone, Clock, Mail, MessageCircle, Instagram, Lock } from "lucide-react"
+import { Playfair_Display } from 'next/font/google'
+
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700'] 
+})
 
 export function Footer() {
   return (
@@ -28,7 +35,7 @@ export function Footer() {
                   className="object-contain"
                 />
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">Kantera</span>
+              <span className={`${playfair.className} text-xl font-bold tracking-tight text-white`}>Kantera</span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/60">
               El detalle que define tu espacio. Somos especialistas en darle la terminación perfecta a tu obra. Natural, funcional y atemporal.

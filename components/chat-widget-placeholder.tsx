@@ -7,6 +7,12 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import { Playfair_Display } from 'next/font/google'
+
+const playfair = Playfair_Display({ 
+  subsets: ['latin'], 
+  weight: ['400', '600', '700'] 
+})
 
 interface Message {
   id: string
@@ -45,21 +51,27 @@ export default function ChatWidgetPlaceholder() {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `¡Hola! Soy tu asistente de Kantera. 
+        content: `¡Hola! Soy tu asistente de <span className="${playfair.className}">Kantera</span>. 
 
 Para poder ayudarte con consultas sobre productos, precios y disponibilidad, primero necesito que instales las dependencias del chatbot:
 
 \`\`\`bash
-npm install ai @ai-sdk/google
+npm install @ai-sdk/google ai
 \`\`\`
 
-Una vez instaladas, podré responder preguntas como:
-- ¿Qué productos tienen para baños?
-- ¿Cuál es el precio de [producto]?
-- ¿Tienen stock de [variante]?
-- ¿Qué piedras naturales tienen disponibles?
+Luego, configura tu API Key de Google Gemini en el archivo \`.env.local\`:
 
-Mientras tanto, puedes navegar por nuestro catálogo directamente en la web. ¡Gracias por tu paciencia!`
+\`\`\`
+GOOGLE_GENERATIVE_AI_API_KEY=tu_api_key_aqui
+\`\`\`
+
+Una vez configurado, podré ayudarte con:
+- Consultas de productos y precios
+- Recomendaciones de materiales
+- Verificación de stock
+- Asesoramiento personalizado
+
+Por favor, instala las dependencias y vuelve a intentarlo. ¡Gracias!`
       }
       
       setMessages(prev => [...prev, botMessage])
@@ -88,9 +100,9 @@ Mientras tanto, puedes navegar por nuestro catálogo directamente en la web. ¡G
         {/* Header */}
         <CardHeader className="bg-sky-500 text-white rounded-t-lg">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <CardTitle className={`${playfair.className} text-lg font-semibold flex items-center gap-2`}>
               <Bot className="h-5 w-5" />
-              Asistente Kantera
+              Asistente <span className={playfair.className}>Kantera</span>
             </CardTitle>
             <Button
               variant="ghost"
@@ -113,8 +125,8 @@ Mientras tanto, puedes navegar por nuestro catálogo directamente en la web. ¡G
               {messages.length === 0 && (
                 <div className="text-center text-muted-foreground py-8">
                   <Bot className="h-12 w-12 mx-auto mb-2 text-sky-500" />
-                  <p className="text-sm">
-                    ¡Hola! Soy tu asistente de Kantera. 
+                  <p className={`${playfair.className} text-sm`}>
+                    ¡Hola! Soy tu asistente de <span className={playfair.className}>Kantera</span>. 
                     <br />
                     ¿En qué puedo ayudarte hoy?
                   </p>
