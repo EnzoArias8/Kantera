@@ -23,7 +23,7 @@ export function PromoVideoWidget({ showSplash = true }: PromoVideoWidgetProps) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[90] w-full max-w-[480px] shadow-2xl overflow-hidden border border-gray-200 bg-white">
+    <div className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[90] w-full max-w-[480px] shadow-2xl overflow-hidden border border-gray-200 bg-white md:bottom-20">
       {/* Botón de cierre */}
       <button
         onClick={() => setIsOpen(false)}

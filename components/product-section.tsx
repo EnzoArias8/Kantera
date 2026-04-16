@@ -209,6 +209,13 @@ export function ProductSection() {
   // Manejar la selección de categoría con scroll a sección productos
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId)
+    setIsInProductsSection(true) // Importante para móvil: indica que estamos en vista de productos
+    
+    // Actualizar URL para reflejar la categoría seleccionada
+    if (typeof window !== 'undefined') {
+      const newHash = categoryId === "todos" ? "#productos" : `#productos?category=${categoryId}`
+      window.history.replaceState(null, '', newHash)
+    }
     
     // Hacer scroll a la sección de productos con retraso para móvil
     setTimeout(() => {
@@ -217,6 +224,22 @@ export function ProductSection() {
         element.scrollIntoView({ behavior: 'smooth' })
       }
     }, 300)
+  }
+
+  // Volver al grid de categorías (especial para móvil)
+  const handleBackToCategories = () => {
+    setSelectedCategory("todos")
+    setIsInProductsSection(false) // Importante: volver a vista de categorías
+    
+    // Actualizar URL para reflejar que estamos en inicio/categorías
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '#')
+    }
+    
+    // Hacer scroll al inicio
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 100)
   }
 
   // Actualizar productos cuando cambia la categoría seleccionada (sin pantalla de carga)
@@ -391,9 +414,6 @@ export function ProductSection() {
                               <h4 className="text-lg font-semibold text-white">
                                 {category.name}
                               </h4>
-                              <p className="text-sm text-white/90">
-                                {count} productos disponibles
-                              </p>
                             </div>
                           </div>
                         </div>
@@ -406,7 +426,7 @@ export function ProductSection() {
               <div>
                 {/* Back button */}
                 <button
-                  onClick={() => setSelectedCategory("todos")}
+                  onClick={handleBackToCategories}
                   className="mb-4 flex items-center gap-2 text-primary hover:underline text-sm font-medium"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -461,7 +481,7 @@ export function ProductSection() {
                   No se encontraron productos en esta categoría.
                 </p>
                 <button
-                  onClick={() => setSelectedCategory("todos")}
+                  onClick={handleBackToCategories}
                   className="text-primary hover:underline text-sm font-medium"
                 >
                   Ver todas las categorías

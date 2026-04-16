@@ -9,8 +9,8 @@ import ChatWrapper from './chat-wrapper'
 const _inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'Kantera - Superficies & Diseño',
-  description: 'Somos especialistas en darle la terminación perfecta a tu obra.            Natural, funcional y atemporal.',
+  title: 'Kantera hogar',
+  description: 'Somos especialistas en darle la terminación perfecta a tu obra. Natural, funcional y atemporal.',
   icons: {
     icon: '/images/logo.jpg',
     shortcut: '/images/logo.jpg',

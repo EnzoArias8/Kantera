@@ -24,7 +24,7 @@ export function HeroSection() {
       <div className="relative mx-auto max-w-7xl px-4 py-24 lg:px-8 lg:py-36">
         <div className="mx-auto max-w-2xl text-center">
           <p className="mb-4 inline-block text-sm font-semibold uppercase tracking-widest text-primary bg-white/90 px-4 py-2 rounded-lg backdrop-blur-sm">
-            SUPERFICIES & DISEÑO
+            HOGAR
           </p>
           <h1 className={`${playfair.className} text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl`}>
             EL DETALLE QUE DEFINE TU ESPACIO
